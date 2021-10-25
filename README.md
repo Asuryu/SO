@@ -1,2 +1,2 @@
 # SO
-Trabalho prático de SO
+Trabalho prático de Sistemas Operativos
