@@ -5,6 +5,8 @@
 #ifndef CLIENTE
 #define CLIENTE
 
-void mostrarASCII();
+#include <stdio.h>
+
+// Start coding!
 
 #endif //CLIENTE

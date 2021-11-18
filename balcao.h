@@ -2,9 +2,11 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
-#ifndef CLIENTE
-#define CLIENTE
+#ifndef BALCAO
+#define BALCAO
 
-void mostrarASCII();
+#include <stdio.h>
 
-#endif //CLIENTE
+// Start coding!
+
+#endif //BALCAO
