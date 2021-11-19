@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     printf("[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
     fflush(stdout);
     char *med_env = getenv("MAXMEDICOS");
-    char *clt_env = getenv("MAXMEDICOS");
+    char *clt_env = getenv("MAXCLIENTES");
     if(med_env == NULL || clt_env == NULL){
         printf("\nAs variáveis de ambiente não estão definidas.\n");
         return 0;

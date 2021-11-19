@@ -4,14 +4,7 @@
 
 #ifndef ENGINE
 #define ENGINE
-#define MAX 100
 
 void mostrarASCII();
-
-struct Cliente {
-    int pid;
-    char nome[MAX];
-    char sintomas[MAX];
-};
 
 #endif //ENGINE
