@@ -4,9 +4,14 @@
 
 #ifndef CLIENTE
 #define CLIENTE
+#define MAX 100
 
 #include <stdio.h>
 
-// Start coding!
+struct Cliente {
+    int pid;
+    char nome[MAX];
+    char sintomas[MAX];
+};
 
 #endif //CLIENTE
