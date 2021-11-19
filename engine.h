@@ -2,8 +2,8 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
-#ifndef CLIENTE
-#define CLIENTE
+#ifndef ENGINE
+#define ENGINE
 #define MAX 100
 
 void mostrarASCII();
@@ -14,4 +14,4 @@ struct Cliente {
     char sintomas[MAX];
 };
 
-#endif //CLIENTE
+#endif //ENGINE
