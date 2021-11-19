@@ -10,10 +10,16 @@
 
 int main(int argc, char *argv[]){
 
+    int maxMed, maxClt;
     mostrarASCII();
     printf("[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
-    printf("Descreva os seus sintomas: ");
+    printf("\nNúmero máximo de médicos: ");
+    scanf("%d", &maxMed);
+    printf("\nNúmero máximo de clientes: ");
+    scanf("%d", &maxClt);
     fflush(stdout);
+    setenv("MAXMEDICOS", maxMed, 1);
+    setenv("MAXCLIENTES", maxClt, 1);
 
     int pid = fork();
     if(pid == 0){
