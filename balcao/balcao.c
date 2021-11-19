@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
     }
     int maxMed = atoi(med_env);
     int maxClt = atoi(clt_env);
-    printf("\nNúmero máximo de médicos: %d\nNúmero máximo de clientes: %d\n", maxMed, maxClt);
+    printf("\nNúmero máximo de médicos: %d\nNúmero máximo de clientes: %d\nIndique os seus sintomas (debug): ", maxMed, maxClt);
     fflush(stdin);
     fflush(stdout);
 
