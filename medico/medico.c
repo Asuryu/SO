@@ -2,7 +2,7 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
-#include "../engine.h"
+#include "medico.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
