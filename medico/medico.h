@@ -5,13 +5,14 @@
 #ifndef MEDICO
 #define MEDICO
 #define MAX 100
+#define SINAL_VIDA 20
 
 #include <stdio.h>
 
-struct Medico {
+typedef struct Medico {
     int pid;
     char nome[MAX];
     char especialidade[MAX];
-};
+} medico, *medico_ptr;
 
 #endif //MEDICO

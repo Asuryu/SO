@@ -8,10 +8,11 @@
 
 #include <stdio.h>
 
-struct Cliente {
+typedef struct Cliente {
     int pid;
     char nome[MAX];
     char sintomas[MAX];
-};
+    char analise[MAX];
+} cliente, *cliente_ptr;
 
 #endif //CLIENTE

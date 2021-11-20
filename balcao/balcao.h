@@ -4,9 +4,18 @@
 
 #ifndef BALCAO
 #define BALCAO
+#define MAX 100
 
 #include <stdio.h>
+#include "../cliente/cliente.h"
+#include "../medico/medico.h"
 
-// Start coding!
+typedef struct Balcao {
+    int unpipeBC[2], unpipeCB[2];
+    int nClientesMax, nMedicosMax;
+    int nClientesAtivos, nMedicosAtivos;
+    struct Medico medicos[MAX];
+    struct Cliente clientes[MAX];
+} balcao, *balcao_ptr;
 
 #endif //BALCAO
