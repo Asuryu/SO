@@ -42,6 +42,7 @@ int main(int argc, char *argv[]){
 
     int pid = fork();
     if(pid == 0){
+        // Child
         close(STDIN_FILENO);
         dup(b.unpipeBC[0]);
         close(b.unpipeBC[0]);
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]){
         close(b.unpipeCB[0]);
         execvp("../classificador", NULL);
     } else {
+        // Parent
         close(b.unpipeBC[0]);
         close(b.unpipeCB[1]);
     }
@@ -61,8 +63,14 @@ int main(int argc, char *argv[]){
         fgets(sintomas, sizeof(sintomas), stdin);
         sintomas[strlen(sintomas) - 1] = '\0';
         strcat(sintomas, "\n");
+
         if(!strcmp(sintomas, "#fim\n")) exit(0);
         else if(!strcmp(sintomas, "encerra\n")) exit(0);
+        else if(!strcmp(sintomas, "utentes\n")) printf("<UTENTES EM LISTA DE ESPERA>");
+        else if(!strcmp(sintomas, "especialistas\n")) printf("<ESPECIALISTAS EM LISTA DE ESPERA>");
+        else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("<UTENTE X REMOVIDO>");
+        else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("<ESPECIALISTA X REMOVIDO>");
+        else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("<A ATUALIZAR LISTA DE X EM X SEGUNDOS>");
         else {
             write(b.unpipeBC[1], sintomas, strlen(sintomas));
             int tmp = read(b.unpipeCB[0], analise, MAX);
@@ -74,9 +82,4 @@ int main(int argc, char *argv[]){
     }
     wait(NULL);
     return 0;
-}
-
-int startsWith(const char *a, const char *b)
-{
-   return !strncmp(a, b, strlen(b));
 }
