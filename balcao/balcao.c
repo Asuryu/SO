@@ -16,7 +16,6 @@ int main(int argc, char *argv[]){
     printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n\n");
     printf("[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
     fflush(stdout);
-    char command[MAX];
     char sintomas[MAX];
     char analise[MAX];
     char *med_env = getenv("MAXMEDICOS");
@@ -33,13 +32,13 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    printf("\nNúmero máximo de médicos: %d\nNúmero máximo de clientes: %d", maxMed, maxClt);
+    printf("\nNúmero máximo de médicos: %d\nNúmero máximo de clientes: %d\n", maxMed, maxClt);
     fflush(stdin);
     fflush(stdout);
 
     balcao b;
-    int retBC = pipe(b.unpipeBC);
-    int retCB = pipe(b.unpipeCB);
+    pipe(b.unpipeBC);
+    pipe(b.unpipeCB);
 
     int pid = fork();
     if(pid == 0){
