@@ -18,6 +18,4 @@ typedef struct Balcao {
     struct Cliente clientes[MAX];
 } balcao, *balcao_ptr;
 
-int startsWith(const char *a, const char *b);
-
 #endif //BALCAO

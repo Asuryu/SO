@@ -44,14 +44,10 @@ int main(int argc, char *argv[]){
     if(pid == 0){
         // Child
         close(STDIN_FILENO);
-        dup(b.unpipeBC[0]);
-        close(b.unpipeBC[0]);
-        close(b.unpipeBC[1]);
         close(STDOUT_FILENO);
+        dup(b.unpipeBC[0]);
         dup(b.unpipeCB[1]);
-        close(b.unpipeCB[1]);
-        close(b.unpipeCB[0]);
-        execvp("../classificador", NULL);
+        execvp("../classificador", NULL); // Quando o pai fecha o classificador continua aberto
     } else {
         // Parent
         close(b.unpipeBC[0]);
