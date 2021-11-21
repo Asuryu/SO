@@ -62,11 +62,6 @@ int main(int argc, char *argv[]){
         sintomas[strlen(sintomas) - 1] = '\0';
         strcat(sintomas, "\n");
         if(!strcmp(sintomas, "#fim\n")) exit(0);
-        else if(!strcmp(sintomas, "utentes\n")) printf("A listar todos os utentes...");
-        else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
-        else if(startsWith(sintomas, "delut")) printf("A remover o utente XYZ...");
-        else if(startsWith(sintomas, "delesp")) printf("A remover o especialista XYZ...");
-        else if(startsWith(sintomas, "freq")) printf("A apresentar a ocupação das filas de X em X segundos...");
         else if(!strcmp(sintomas, "encerra\n")) exit(0);
         else {
             write(b.unpipeBC[1], sintomas, strlen(sintomas));
