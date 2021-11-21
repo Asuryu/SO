@@ -62,13 +62,27 @@ int main(int argc, char *argv[]){
         fgets(sintomas, sizeof(sintomas), stdin);
         sintomas[strlen(sintomas) - 1] = '\0';
         strcat(sintomas, "\n");
-        write(b.unpipeBC[1], sintomas, strlen(sintomas));
-        int tmp = read(b.unpipeCB[0], analise, MAX);
-        analise[tmp-1]= '\0';
-        printf("O classificador retornou: %s", analise);
-        fflush(stdout);
-        fflush(stdin);
+        if(!strcmp(sintomas, "#fim\n")) exit(0);
+        else if(!strcmp(sintomas, "utentes\n")) printf("A listar todos os utentes...");
+        else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
+        else if(startsWith(sintomas, "delut")) printf("A remover o utente XYZ...");
+        else if(startsWith(sintomas, "delesp")) printf("A remover o especialista XYZ...");
+        else if(startsWith(sintomas, "freq")) printf("A apresentar a ocupação das filas de X em X segundos...");
+        else if(!strcmp(sintomas, "encerra\n")) exit(0);
+        else {
+            write(b.unpipeBC[1], sintomas, strlen(sintomas));
+            int tmp = read(b.unpipeCB[0], analise, MAX);
+            analise[tmp-1]= '\0';
+            printf("O classificador retornou: %s", analise);
+            fflush(stdout);
+            fflush(stdin);
+        }
     }
     wait(NULL);
     return 0;
+}
+
+int startsWith(const char *a, const char *b)
+{
+   return !strncmp(a, b, strlen(b));
 }
