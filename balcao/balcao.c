@@ -2,6 +2,8 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
+//FIXME: Quando o pai fecha o classificador continua aberto
+
 #include "balcao.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,24 +38,22 @@ int main(int argc, char *argv[]){
     fflush(stdin);
     fflush(stdout);
 
-    balcao b;
-    pipe(b.unpipeBC);
-    pipe(b.unpipeCB);
+    balcao b; // Struct do tipo balcão
+    pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
+    pipe(b.unpipeCB); // Criação do pipe Classificador -> Balcão
 
-    int pid = fork();
-    if(pid == 0){
-        // Child
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
+    int pid = fork(); // Criação de um processo filho
+    if(pid == 0){ // Código a correr pelo processo filho
+        close(STDIN_FILENO); // Fecha o STDIN do processo filho
+        close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
         dup(b.unpipeBC[0]);
         dup(b.unpipeCB[1]);
-        execvp("../classificador", NULL); // Quando o pai fecha o classificador continua aberto
-    } else {
-        // Parent
-        close(b.unpipeBC[0]);
-        close(b.unpipeCB[1]);
+        execvp("../classificador", NULL);
+    } else { // Código a correr pelo processo pai
+        close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
+        close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
     }
-    while (1){
+    while (1){ // Ciclo para pedir os sintomas ao utilizador
         strcpy(analise,"");
         printf("\nIndique os seus sintomas (debug): ");
         fgets(sintomas, sizeof(sintomas), stdin);
@@ -61,21 +61,21 @@ int main(int argc, char *argv[]){
         strcat(sintomas, "\n");
 
         if(!strcmp(sintomas, "#fim\n")) exit(0);
+        else if(!strcmp(sintomas, "utentes\n")) printf("A listar todos os utentes...");
+        else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
+        else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
+        else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
+        else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");
         else if(!strcmp(sintomas, "encerra\n")) exit(0);
-        else if(!strcmp(sintomas, "utentes\n")) printf("<UTENTES EM LISTA DE ESPERA>");
-        else if(!strcmp(sintomas, "especialistas\n")) printf("<ESPECIALISTAS EM LISTA DE ESPERA>");
-        else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("<UTENTE X REMOVIDO>");
-        else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("<ESPECIALISTA X REMOVIDO>");
-        else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("<A ATUALIZAR LISTA DE X EM X SEGUNDOS>");
         else {
-            write(b.unpipeBC[1], sintomas, strlen(sintomas));
-            int tmp = read(b.unpipeCB[0], analise, MAX);
+            write(b.unpipeBC[1], sintomas, strlen(sintomas)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
+            int tmp = read(b.unpipeCB[0], analise, MAX); // Ler para a variável análise o conteúdo existente no pipe Classificador -> Balcão
             analise[tmp-1]= '\0';
             printf("O classificador retornou: %s", analise);
             fflush(stdout);
             fflush(stdin);
         }
     }
-    wait(NULL);
+    wait(NULL); // Esperar que o processo filho termine
     return 0;
 }
