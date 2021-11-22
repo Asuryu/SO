@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
     printf("\nNúmero máximo de médicos: %d\nNúmero máximo de clientes: %d\n", maxMed, maxClt);
     fflush(stdin);
     fflush(stdout);
-
+// SOU BUEDA FIXEEE
     balcao b; // Struct do tipo balcão
     pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
     pipe(b.unpipeCB); // Criação do pipe Classificador -> Balcão
