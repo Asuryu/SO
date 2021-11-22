@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 int main(int argc, char *argv[]){
 
@@ -46,9 +48,9 @@ int main(int argc, char *argv[]){
     if(pid == 0){ // Código a correr pelo processo filho
         close(STDIN_FILENO); // Fecha o STDIN do processo filho
         close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
-        dup(b.unpipeBC[0]);
-        dup(b.unpipeCB[1]);
-        execvp("../classificador", NULL);
+        dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
+        dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
+        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
     } else { // Código a correr pelo processo pai
         close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
         close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
