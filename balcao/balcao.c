@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
         close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
         dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
         dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
-        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
+        execl("../classificadorMAC", "../classificadorMAC", (char*)NULL); // Executa o classificador sem argumentos extra
     } else { // Código a correr pelo processo pai
         close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
         close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
         else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
         else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");
-        else if(!strcmp(sintomas, "encerra\n")) exit(0);
+        else if(!strcmp(sintomas, "encerra\n")) break;
         else {
             write(b.unpipeBC[1], sintomas, strlen(sintomas)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
             int tmp = read(b.unpipeCB[0], analise, MAX); // Ler para a variável análise o conteúdo existente no pipe Classificador -> Balcão
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]){
             fflush(stdin);
         }
     }
+    write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
     wait(NULL); // Esperar que o processo filho termine
     return 0;
 }
