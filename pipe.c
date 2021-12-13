@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 int main(){
 char mensagem[100];
 strcpy(mensagem, "ola do cliente");
