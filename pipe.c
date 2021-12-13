@@ -1,4 +1,13 @@
 #include <sys/stat.h>
+#define SERVER_FIFO "Servidor"
+#define CLIENTE_FIFO "CLIENTE%d" // Cliente123
+
+typedef struct{
+	pid_t pid;
+	char texto;
+	char FIFOdeResposta
+};
+mkfifo("respostaCliente", 0666);
 
 int main(){
 char mensagem[100];
