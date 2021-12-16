@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
     printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n\n");
     char *mso_state = getenv("MEDICALSO_RUN");
     if(mso_state == NULL){
-        printf("[MÉDICO]\nO balcão está fora de serviço\n");
+        printf("[CLIENTE]\nO balcão está fora de serviço\n");
         return 0;
     }
     if(argv[1] == NULL) printf("[CLIENTE]\nPor favor insira um nome\nUtilização: ./cliente [nome]\n");
