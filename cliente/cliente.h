@@ -5,6 +5,7 @@
 #ifndef CLIENTE
 #define CLIENTE
 #define MAX 100
+#define SINAL_VIDA 20
 
 #include <stdio.h>
 

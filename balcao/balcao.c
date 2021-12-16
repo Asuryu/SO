@@ -68,7 +68,7 @@ int main(int argc, char *argv[]){
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
         else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
         else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");
-        else if(!strcmp(sintomas, "encerra\n")) exit(0);
+        else if(!strcmp(sintomas, "encerra\n")) break;
         else {
             write(b.unpipeBC[1], sintomas, strlen(sintomas)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
             int tmp = read(b.unpipeCB[0], analise, MAX); // Ler para a variável análise o conteúdo existente no pipe Classificador -> Balcão
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]){
             fflush(stdin);
         }
     }
+    write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
     wait(NULL); // Esperar que o processo filho termine
     return 0;
 }
