@@ -24,11 +24,21 @@ int main(int argc, char *argv[]){
     char analise[MAX];
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
+
+    FILE *fpipe;
+    char *command = "ps -a | grep balcao -c";
+    char c = 0;
+    fpipe = (FILE*) popen(command, "r");
+    while (fread(&c, sizeof c, 1, fpipe))
+    {
+        printf("%c", c);
+    }
+    pclose(fpipe);
+
     if(med_env == NULL || clt_env == NULL){
         printf("\nAs variáveis de ambiente não estão definidas.\n");
         return 0;
     }
-    
     int maxMed = atoi(med_env);
     int maxClt = atoi(clt_env);
     if(maxMed < 1 || maxClt < 1){
@@ -50,7 +60,7 @@ int main(int argc, char *argv[]){
         close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
         dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
         dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
-        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
+        execl("../classificadorMAC", "../classificadorMAC", (char*)NULL); // Executa o classificador sem argumentos extra
     } else { // Código a correr pelo processo pai
         close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
         close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
@@ -62,7 +72,7 @@ int main(int argc, char *argv[]){
         sintomas[strlen(sintomas) - 1] = '\0';
         strcat(sintomas, "\n");
 
-        if(!strcmp(sintomas, "#fim\n")) exit(0);
+        if(!strcmp(sintomas, "#fim\n")) break;
         else if(!strcmp(sintomas, "utentes\n")) printf("A listar todos os utentes...");
         else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
@@ -80,5 +90,7 @@ int main(int argc, char *argv[]){
     }
     write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
     wait(NULL); // Esperar que o processo filho termine
+    close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
+    close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão
     return 0;
 }
