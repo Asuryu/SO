@@ -27,13 +27,13 @@ int main(int argc, char *argv[]){
 
     FILE *fpipe;
     char *command = "ps -a | grep balcao -c";
-    char c = 0;
-    fpipe = (FILE*) popen(command, "r");
-    while (fread(&c, sizeof c, 1, fpipe))
-    {
-        printf("%c", c);
-    }
-    pclose(fpipe);
+    // char c = 0;
+    // fpipe = (FILE*) popen(command, "r");
+    // while (fread(&c, sizeof c, 1, fpipe))
+    // {
+    //     printf("%c", c);
+    // }
+    // pclose(fpipe);
 
     if(med_env == NULL || clt_env == NULL){
         printf("\nAs variáveis de ambiente não estão definidas.\n");
