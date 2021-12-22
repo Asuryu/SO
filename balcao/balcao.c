@@ -25,8 +25,8 @@ int main(int argc, char *argv[]){
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
 
-    FILE *fpipe;
-    char *command = "ps -a | grep balcao -c";
+    //FILE *fpipe;
+    //char *command = "ps -a | grep balcao -c";
     // char c = 0;
     // fpipe = (FILE*) popen(command, "r");
     // while (fread(&c, sizeof c, 1, fpipe))
