@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
 
-    //FILE *fpipe;
+    FILE *fpipe;
     //char *command = "ps -a | grep balcao -c";
     // char c = 0;
     // fpipe = (FILE*) popen(command, "r");
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
         close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
         dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
         dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
-        execl("../classificadorMAC", "../classificadorMAC", (char*)NULL); // Executa o classificador sem argumentos extra
+        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
     } else { // Código a correr pelo processo pai
         close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
         close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
