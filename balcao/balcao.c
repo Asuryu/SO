@@ -2,8 +2,6 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
-//FIXME: Quando o pai fecha o classificador continua aberto
-
 #include "balcao.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +9,17 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
+int onlyBalcao(){
+    FILE *fpipe;
+    char *command = "ps -a | grep '.[0-9][0-9] ./balcao\\|.[0-9][0-9]balcao' -c";
+    char c = 0;
+    fpipe = (FILE*) popen(command, "r");
+    while (fread(&c, sizeof c, 1, fpipe))
+        if (c - '0' > 1) return 0;
+    pclose(fpipe);
+    return 1;
+}
 
 int main(int argc, char *argv[]){
 
@@ -25,18 +34,10 @@ int main(int argc, char *argv[]){
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
 
-    FILE *fpipe;
-    char *command = "ps -a | grep balcao -c";
-    char c = 0;
-    fpipe = (FILE*) popen(command, "r");
-    while (fread(&c, sizeof c, 1, fpipe))
-    {
-        if (c - '0' > 1){
-            printf("\nJá existe um balcão a correr.\n");
-            return 0;
-        }
+    if (!onlyBalcao()) {
+        printf("\nJá existe um balcão a correr.\n");
+        return 0;
     }
-    pclose(fpipe);
     if(med_env == NULL || clt_env == NULL){
         printf("\nAs variáveis de ambiente não estão definidas.\n");
         return 0;
