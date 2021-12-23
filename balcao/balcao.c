@@ -12,7 +12,7 @@
 
 int onlyBalcao(){
     FILE *fpipe;
-    char *command = "ps -a | grep '.[0-9][0-9] ./balcao\\|.[0-9][0-9]balcao' -c";
+    char *command = "ps -a | grep '[0-9][0-9] balcao\\|[0-9][0-9] ./balcao' -c";
     char c = 0;
     fpipe = (FILE*) popen(command, "r");
     while (fread(&c, sizeof c, 1, fpipe))
