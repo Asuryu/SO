@@ -2,8 +2,6 @@
 // Tomás Gomes Silva - 2020143845
 // Tomás da Cunha Pinto - 2020144067
 
-//FIXME: Quando o pai fecha o classificador continua aberto
-
 #include "balcao.h"
 #include <stdio.h>
 #include <stdlib.h>
