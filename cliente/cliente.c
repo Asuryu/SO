@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 
 #define BALCAO_FIFO "../MEDICALso"
+#define BALCAO_FIFO_CLI "../MEDICALsoCLI"
 #define CLIENTE_FIFO "../CLIENTE[%d]"
 
 char CLIENTE_FIFO_FINAL[MAX];
@@ -60,7 +61,7 @@ int main(int argc, char *argv[]){
 
     c.pid = getpid();
     strcpy(c.nome, argv[1]);
-    int fd_envio = open(BALCAO_FIFO, O_WRONLY);
+    int fd_envio = open(BALCAO_FIFO_CLI, O_WRONLY | O_NONBLOCK);
     int size = write(fd_envio, &c, sizeof(cliente));
     close(fd_envio);
     unlink(CLIENTE_FIFO_FINAL);

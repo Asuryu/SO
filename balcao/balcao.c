@@ -9,27 +9,19 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
 
 #define BALCAO_FIFO "../MEDICALso"
+#define BALCAO_FIFO_MED "../MEDICALsoMED"
+#define BALCAO_FIFO_CLI "../MEDICALsoCLI"
 #define CLIENTE_FIFO "../CLIENTE[%d]"
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 char FIFO_FINAL[MAX];
-
-// int onlyBalcao(){
-//     FILE *fpipe;
-//     char *command = "ps -a | grep '[0-9][0-9] balcao\\|[0-9][0-9] ./balcao' -c";
-//     char c = 0;
-//     fpipe = (FILE*) popen(command, "r");
-//     while (fread(&c, sizeof c, 1, fpipe))
-//         if (c - '0' > 1) return 0;
-//     pclose(fpipe);
-//     return 1;
-// }
 
 int onlyBalcao(){
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
@@ -40,6 +32,63 @@ int onlyBalcao(){
     return 0;
 }
 
+void *aceitarMedicos(void *vargp)
+{
+
+    resposta r;
+    balcao b = *((balcao*)vargp);
+    medico m;
+
+    int fdR = open(BALCAO_FIFO_MED, O_RDONLY | O_NONBLOCK);
+    do
+    {   
+        int flag = 0;
+        int size = read(fdR, &m, sizeof(m));
+
+        for(int i = 0; i < b.nMedicosAtivos; i++){
+            if(m.pid == b.medicos[i].pid){
+                flag = 1;
+                break;
+            }
+        }
+        if(b.nMedicosAtivos < b.nMedicosMax && flag == 0 && m.pid != 0){
+            b.medicos[b.nMedicosAtivos] = m;
+            b.nMedicosAtivos++;
+            printf("[PID %d] Médico: %s (%s)\n", m.pid, m.nome, m.especialidade);
+            fflush(stdout);
+        }
+    } while (1);
+}
+
+void *aceitarClientes(void *vargp)
+{
+
+    resposta r;
+    balcao b = *((balcao*)vargp);
+    cliente c;
+
+    int fdR = open(BALCAO_FIFO_CLI, O_RDONLY | O_NONBLOCK);
+    do
+    {   
+        int flag = 0;
+        int size = read(fdR, &c, sizeof(c));
+
+        for(int i = 0; i < b.nClientesAtivos; i++){
+            if(c.pid == b.clientes[i].pid){
+                flag = 1;
+                break;
+            }
+        }
+        if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
+            b.clientes[b.nClientesAtivos] = c;
+            b.nClientesAtivos++;
+            printf("[PID %d] Cliente: %s\n", c.pid, c.nome);
+            fflush(stdout);
+        }
+    } while (1);
+}
+
+
 int main(int argc, char *argv[]){
 
     printf("\033[2J\033[1;1H");
@@ -48,10 +97,9 @@ int main(int argc, char *argv[]){
     printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n\n");
     printf("[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
     fflush(stdout);
-
+    
+    pthread_t thread_id;
     balcao b;
-    medico m;
-    cliente c;
     resposta r;
 
     int fd;
@@ -124,6 +172,7 @@ int main(int argc, char *argv[]){
     // close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
     // close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão
 
+    // Criação do FIFO do Balcão
     if(mkfifo(BALCAO_FIFO,0666) == -1){
         if(errno == EEXIST){
             printf("FIFO ja existe!\n");
@@ -131,44 +180,28 @@ int main(int argc, char *argv[]){
         printf("Erro ao abrir fifo!\n");
         return 0;
     }
-    
-    int fdR = open(BALCAO_FIFO, O_RDONLY);
-    do
-    {   
-        int flag = 0;
-        int size = read(fdR, &m, sizeof(m));
-
-        for(int i = 0; i < b.nMedicosAtivos; i++){
-            if(m.pid == b.medicos[i].pid){
-                flag = 1;
-                break;
-            }
+    if(mkfifo(BALCAO_FIFO_MED,0666) == -1){
+        if(errno == EEXIST){
+            printf("FIFO ja existe!\n");
         }
-        if(b.nMedicosAtivos < b.nMedicosMax && flag == 0){
-            b.medicos[b.nMedicosAtivos] = m;
-            b.nMedicosAtivos++;
-            printf("[PID %d] Médico: %s (%s)\n", m.pid, m.nome, m.especialidade);
-            sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid);
-            int fdW = open(FIFO_FINAL, O_WRONLY);
-            r.pid = getpid();
-            strcpy(r.resposta, "ok!");
-            printf("%s", r.resposta);
-            int sizee = write(fdW, &r, sizeof(resposta));
-            fflush(stdout);
-            close(fdW);
-        } else {
-            sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid);
-            int fdW = open(FIFO_FINAL, O_WRONLY);
-            r.pid = getpid();
-            strcpy(r.resposta, "nao!");
-            int sizee = write(fdW, &r, sizeof(resposta));
-            fflush(stdout);
-            close(fdW);
+        printf("Erro ao abrir fifo!\n");
+        return 0;
+    }
+    if(mkfifo(BALCAO_FIFO_CLI,0666) == -1){
+        if(errno == EEXIST){
+            printf("FIFO ja existe!\n");
         }
-    } while (1);
+        printf("Erro ao abrir fifo!\n");
+        return 0;
+    }
 
-    close(fdR);
+    pthread_create(&thread_id, NULL, aceitarMedicos, &b);
+    pthread_create(&thread_id, NULL, aceitarClientes, &b);
+    pthread_join(thread_id, NULL);
+
     unlink(BALCAO_FIFO);
+    unlink(BALCAO_FIFO_MED);
+    unlink(BALCAO_FIFO_CLI);
 
     return 0;
 }

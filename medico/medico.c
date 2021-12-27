@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 
 #define BALCAO_FIFO "../MEDICALso"
+#define BALCAO_FIFO_MED "../MEDICALsoMED"
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 char MEDICO_FIFO_FINAL[MAX];
@@ -27,18 +28,6 @@ int balcaoAberto(){
         return 0;
     }
     return 1;
-}
-
-void handler_funcSignal(int signum){ // Para o sa_handler com (completo - PIDs, etc...)
-    printf("\nEstou vivo meu puto!\n");
-}
-
-void *enviarSinais(void *vargp)
-{
-    while(1){
-        alarm(SINAL_VIDA);
-        pause();
-    }
 }
 
 int main(int argc, char *argv[]){
@@ -73,32 +62,9 @@ int main(int argc, char *argv[]){
     m.pid = getpid();
     strcpy(m.nome, argv[1]);
     strcpy(m.especialidade, argv[2]);
-    int fd_envio = open(BALCAO_FIFO, O_WRONLY);
+    int fd_envio = open(BALCAO_FIFO_MED, O_WRONLY);
     int size = write(fd_envio, &m, sizeof(medico));
 
-    // Abrir FIFO para receber pedidos
-    int fd_receber = open(MEDICO_FIFO_FINAL, O_RDONLY);
-    int response = read(fd_receber, &r, sizeof(resposta));
-    pidBalcao = r.pid;
-    if(strcmp(r.resposta, "ok!") == 0){
-        printf("[MÉDICO]\nPedido aceite!\n");
-
-        struct sigaction sa;
-        sa.sa_handler = handler_funcSignal;
-        sa.sa_flags = SA_RESTART | SA_SIGINFO;
-        sigaction(SIGALRM, &sa, NULL);
-        
-        pthread_create(&thread_id, NULL, enviarSinais, NULL);
-        pthread_join(thread_id, NULL);
-
-        while(1){
-            printf("Gang");
-        }
-
-    } else {
-        printf("[MÉDICO]\nPedido não aceite!\n");
-    }
-    close(fd_receber);
     close(fd_envio);
     unlink(MEDICO_FIFO_FINAL);
 
