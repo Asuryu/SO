@@ -18,10 +18,11 @@ int main(int argc, char *argv[]){
         printf("[MÉDICO]\nO balcão está fora de serviço\n");
         return 0;
     }
-    if(argv[1] == NULL || argv[2] == NULL) printf("[MÉDICO]\nPor favor insira um nome e uma especialidade\nUtilização: ./medico [nome] [espcialidade]\n");
+    if(argv[1] == NULL || argv[2] == NULL){
+        printf("[MÉDICO]\nPor favor insira um nome e uma especialidade\nUtilização: ./medico [nome] [espcialidade]\n");
+        return 0;
+    }
     else printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", argv[1], argv[2]);
-    
-    fflush(stdout);
 
     return 0;
 }

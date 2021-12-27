@@ -25,7 +25,10 @@ int main(int argc, char *argv[]){
         printf("[CLIENTE]\nO balcão está fora de serviço\n");
         return 0;
     }
-    if(argv[1] == NULL) printf("[CLIENTE]\nPor favor insira um nome\nUtilização: ./cliente [nome]\n");
+    if(argv[1] == NULL){
+        printf("[CLIENTE]\nPor favor insira um nome\nUtilização: ./cliente [nome]\n");
+        return 0;
+    }
     else printf("[CLIENTE]\nBem vindo ao MEDICALso, %s\n", argv[1]);
 
     struct sigaction sa;
