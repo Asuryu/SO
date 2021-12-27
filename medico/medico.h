@@ -15,4 +15,9 @@ typedef struct Medico {
     char especialidade[MAX];
 } medico, *medico_ptr;
 
+typedef struct Resposta{
+    int pid;
+    char resposta[MAX];
+} resposta, *resposta_ptr;
+
 #endif //MEDICO
