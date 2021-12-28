@@ -60,13 +60,13 @@ int main(int argc, char *argv[]){
     }
     
     m.pid = getpid();
-    strcpy(m.nome, argv[1]);
+    strcpy(m.nome, argv[1]); 
     strcpy(m.especialidade, argv[2]);
     int fd_envio = open(BALCAO_FIFO_MED, O_WRONLY);
     int size = write(fd_envio, &m, sizeof(medico));
 
-    close(fd_envio);
-    unlink(MEDICO_FIFO_FINAL);
+    //close(fd_envio);
+    //unlink(MEDICO_FIFO_FINAL);
 
     return 0;
 }
