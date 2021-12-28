@@ -66,10 +66,11 @@ int main(int argc, char *argv[]){
     int size = write(fd_envio, &m, sizeof(medico));
     char resposta[MAX];
     int fd_recebe = open(MEDICO_FIFO_FINAL, O_RDONLY);
-    printf("\n\n%s\n\n", resposta);
     int size2 = read(fd_recebe,  resposta, sizeof(resposta));
     if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
         printf("Limite de Médicos atingido");
+    else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
+        printf("Médico aceite!");
     close(fd_recebe);
     close(fd_envio);
     unlink(MEDICO_FIFO_FINAL);
