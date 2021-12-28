@@ -83,18 +83,29 @@ void *aceitarClientes(void *vargp){
     {   
         int flag = 0;
         int size = read(fdR, &c, sizeof(c));
-
-        for(int i = 0; i < b.nClientesAtivos; i++){
-            if(c.pid == b.clientes[i].pid){
-                flag = 1;
-                break;
+        if(size > 0){
+            
+            for(int i = 0; i < b.nClientesAtivos; i++){
+                if(c.pid == b.clientes[i].pid){
+                    flag = 1;
+                    break;
+                }
             }
-        }
-        if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
-            b.clientes[b.nClientesAtivos] = c;
-            b.nClientesAtivos++;
-            printf("\n[PID %d] Cliente: %s\n", c.pid, c.nome);
-            fflush(stdout);
+            if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
+                b.clientes[b.nClientesAtivos] = c;
+                b.nClientesAtivos++;
+                printf("\n[PID %d] Cliente: %s\n", c.pid, c.nome);
+                
+                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+                int fd_envio = open(FIFO_FINAL, O_WRONLY);
+                int size = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
+            } else {
+                printf("\n[PID %d] Cliente: %s --> Não aceite\n", c.pid, c.nome);
+               
+                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+                int fd_envio = open(FIFO_FINAL, O_WRONLY);
+                int size = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+            }
         }
     } while (1);
 }

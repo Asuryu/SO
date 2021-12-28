@@ -68,9 +68,9 @@ int main(int argc, char *argv[]){
     int fd_recebe = open(MEDICO_FIFO_FINAL, O_RDONLY);
     int size2 = read(fd_recebe,  resposta, sizeof(resposta));
     if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
-        printf("Limite de Médicos atingido");
+        printf("\nLimite de Médicos atingido\n");
     else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
-        printf("Médico aceite!");
+        printf("\nMédico aceite!\n");
     close(fd_recebe);
     close(fd_envio);
     unlink(MEDICO_FIFO_FINAL);
