@@ -64,7 +64,11 @@ int main(int argc, char *argv[]){
     strcpy(m.especialidade, argv[2]);
     int fd_envio = open(BALCAO_FIFO_MED, O_WRONLY);
     int size = write(fd_envio, &m, sizeof(medico));
-
+    char resposta[MAX];
+    int fd_recebe = open(MEDICO_FIFO_FINAL, O_RDONLY);
+    int size2 = read(fd_recebe,  resposta, sizeof(resposta));
+    if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
+        printf("Limite de Médicos atingido");
     close(fd_envio);
     unlink(MEDICO_FIFO_FINAL);
 
