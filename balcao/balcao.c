@@ -38,7 +38,7 @@ void *aceitarMedicos(void *vargp){
     balcao b = *((balcao*)vargp);
     medico m;
 
-    int fdR = open(BALCAO_FIFO_MED, O_RDONLY | O_NONBLOCK);
+    int fdR = open(BALCAO_FIFO_MED, O_RDONLY);
     do
     {   
         int flag = 0;
