@@ -38,30 +38,36 @@ void *aceitarMedicos(void *vargp){
     balcao b = *((balcao*)vargp);
     medico m;
 
-    int fdR = open(BALCAO_FIFO_MED, O_RDONLY);
+    int fdR = open(BALCAO_FIFO_MED, O_RDONLY | O_NONBLOCK);
     do
     {   
         int flag = 0;
         int size = read(fdR, &m, sizeof(m));
-
-        for(int i = 0; i < b.nMedicosAtivos; i++){
+        if(size > 0){
+            for(int i = 0; i < b.nMedicosAtivos; i++){
             if(m.pid == b.medicos[i].pid){
                 flag = 1;
                 break;
             }
         }
-        if(b.nMedicosAtivos < b.nMedicosMax && flag == 0 && m.pid != 0){
-            b.medicos[b.nMedicosAtivos] = m;
-            b.nMedicosAtivos++;
-            printf("\n[PID %d] Médico: %s (%s)\n", m.pid, m.nome, m.especialidade);
-            fflush(stdout);
-        } else {
-            sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
-            int fd_envio = open(FIFO_FINAL, O_WRONLY);
-            int size = write(fd_envio, "400 - LIMITE", sizeof("400 - LIMITE"));
-            close(fd_envio);
-
+            if(b.nMedicosAtivos < b.nMedicosMax && flag == 0 && m.pid != 0){
+                b.medicos[b.nMedicosAtivos] = m;
+                b.nMedicosAtivos++;
+                printf("\n[PID %d] Médico: %s (%s)\n", m.pid, m.nome, m.especialidade);
+                fflush(stdout);
+            } else {
+                // Médico não aceite
+                printf("\n[PID %d] Médico: %s (%s) não aceite\n", m.pid, m.nome, m.especialidade);
+            }
         }
+        
+        // else {
+        //     sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+        //     int fd_envio = open(FIFO_FINAL, O_WRONLY);
+        //     int size = write(fd_envio, "400 - LIMITE", sizeof("400 - LIMITE"));
+        //     close(fd_envio);
+
+        // }
 
     } while (1);
 }

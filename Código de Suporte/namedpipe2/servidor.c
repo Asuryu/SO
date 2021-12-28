@@ -60,40 +60,40 @@ int main()
         if(size > 0){
         //realiza operacao
         //enviar para o cliente[PID] certo
-        int resultado;
-        printf("Ligado ao cliente [%5d]\n", operacao.pid);
-        if(operacao.operador == '+')
-        {
-            resultado = operacao.num1 + operacao.num2;
-            printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
-        }
-        else if(operacao.operador == '-')
-        {
-            resultado = operacao.num1 - operacao.num2;
-            printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
-        }
-        else if(operacao.operador == '/')
-        {
-            resultado = operacao.num1 / operacao.num2;
-            printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
-        }
-        else if(operacao.operador == 'x' || operacao.operador == '*')
-        {
-            resultado = operacao.num1 * operacao.num2;
-            printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
-        }
-        else if(operacao.operador == '.')
-        {
-            kill(getpid(), SIGINT);
-        }
+            int resultado;
+            printf("Ligado ao cliente [%5d]\n", operacao.pid);
+            if(operacao.operador == '+')
+            {
+                resultado = operacao.num1 + operacao.num2;
+                printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
+            }
+            else if(operacao.operador == '-')
+            {
+                resultado = operacao.num1 - operacao.num2;
+                printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
+            }
+            else if(operacao.operador == '/')
+            {
+                resultado = operacao.num1 / operacao.num2;
+                printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
+            }
+            else if(operacao.operador == 'x' || operacao.operador == '*')
+            {
+                resultado = operacao.num1 * operacao.num2;
+                printf("Cliente [%5d] -> Operacao: [%d %c %d]; Resultado: [%d]\n",operacao.pid, operacao.num1, operacao.operador, operacao.num2, resultado);
+            }
+            else if(operacao.operador == '.')
+            {
+                kill(getpid(), SIGINT);
+            }
 
-        resposta.res = resultado;
+            resposta.res = resultado;
 
-        sprintf(CLIENT_FIFO_FINAL, CLIENTE_FIFO, operacao.pid);
-        int fdResponde = open (CLIENT_FIFO_FINAL, O_WRONLY);
-        if(fdResponde == -1){printf("Erro\n");}
-        int size2 = write(fdResponde, &resposta, sizeof(resposta));
-        close(fdResponde);
+            sprintf(CLIENT_FIFO_FINAL, CLIENTE_FIFO, operacao.pid);
+            int fdResponde = open (CLIENT_FIFO_FINAL, O_WRONLY);
+            if(fdResponde == -1){printf("Erro\n");}
+            int size2 = write(fdResponde, &resposta, sizeof(resposta));
+            close(fdResponde);
         }
     }while(1);
 
