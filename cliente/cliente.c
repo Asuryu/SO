@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
 
     char resposta[MAX];
     int fd_recebe = open(CLIENTE_FIFO_FINAL, O_RDONLY);
-    int size = read(fd_recebe, resposta, sizeof(resposta));
+    int size2 = read(fd_recebe, resposta, sizeof(resposta));
     if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
         printf("\nLimite de Clientes atingido\n");
     else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
