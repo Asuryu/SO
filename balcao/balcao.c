@@ -55,7 +55,14 @@ void *aceitarMedicos(void *vargp){
             b.nMedicosAtivos++;
             printf("\n[PID %d] Médico: %s (%s)\n", m.pid, m.nome, m.especialidade);
             fflush(stdout);
+        } else {
+            sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+            int fd_envio = open(FIFO_FINAL, O_WRONLY);
+            int size = write(fd_envio, "400 - LIMITE", sizeof("400 - LIMITE"));
+            close(fd_envio);
+
         }
+
     } while (1);
 }
 
@@ -134,7 +141,6 @@ void *consolaAdministrador(void *vargp){
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
     close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão
 }
-
 
 int main(int argc, char *argv[]){
 
