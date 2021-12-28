@@ -58,7 +58,8 @@ int main(int argc, char *argv[]){
         printf("Erro ao abrir fifo!\n");
         return 1;
     }
-
+    printf("Indique os seus sintomas: ");
+    scanf("%[^\n]", c.sintomas);
     c.pid = getpid();
     strcpy(c.nome, argv[1]);
     int fd_envio = open(BALCAO_FIFO_CLI, O_WRONLY | O_NONBLOCK);
@@ -68,9 +69,9 @@ int main(int argc, char *argv[]){
     int fd_recebe = open(CLIENTE_FIFO_FINAL, O_RDONLY);
     int size = read(fd_recebe, resposta, sizeof(resposta));
     if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
-        printf("\nLimite de Médicos atingido\n");
+        printf("\nLimite de Clientes atingido\n");
     else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
-        printf("\nMédico aceite!\n");
+        printf("\nCliente aceite!\n");
     close(fd_recebe);
     close(fd_envio);
     unlink(CLIENTE_FIFO_FINAL);

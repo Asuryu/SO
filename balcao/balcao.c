@@ -94,14 +94,14 @@ void *aceitarClientes(void *vargp){
             if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
                 b.clientes[b.nClientesAtivos] = c;
                 b.nClientesAtivos++;
-                printf("\n[PID %d] Cliente: %s\n", c.pid, c.nome);
+                printf("\n[PID %d] Cliente: %s (%s)\n", c.pid, c.nome, c.sintomas);
                 
                 sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
                 int size = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
             } else {
-                printf("\n[PID %d] Cliente: %s --> Não aceite\n", c.pid, c.nome);
-               
+                printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
+
                 sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
                 int size = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
