@@ -111,9 +111,9 @@ void *aceitarClientes(void *vargp){
             if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
                 b.clientes[b.nClientesAtivos] = c;
                 b.nClientesAtivos++;
-                printf("\n[PID %d] Cliente: %s\n", c.pid, c.nome);
+                printf("\n[PID %d] Cliente: %s (%s)\n", c.pid, c.nome, c.sintomas);
                 
-                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); // Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
                 if(fd_envio == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);
@@ -122,10 +122,14 @@ void *aceitarClientes(void *vargp){
                 if(size2 == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
                 }
+                // PEDIR AO CLASSIFICADOR PARA CLASSIFICAR OS SINTOMAS
+                // ENVIAR AO CLIENTE O RESULTADO
+                // IDEIA: Criar função para enviar uma mensagem para o classificador
+            
             } else {
-                printf("\n[PID %d] Cliente: %s --> Não aceite\n", c.pid, c.nome);
+                printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
 
-                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); // Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
                 if(fd_envio == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);

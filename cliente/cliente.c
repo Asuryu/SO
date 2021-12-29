@@ -56,6 +56,8 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
+    printf("Introduza os seus sintomas: ");
+    scanf("%[^\n]", c.sintomas);
     c.pid = getpid();
     strcpy(c.nome, argv[1]);
     int fd_envio = open(BALCAO_FIFO_CLI, O_WRONLY);
@@ -87,8 +89,7 @@ int main(int argc, char *argv[]){
             printf("\n[CLIENTE]\nNão foi possível conectar ao balcão:\nLimite de pacientes atingido\n");
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
-            printf("Introduza os seus sintomas: ");
-            scanf("%[^\n]", c.sintomas);
+            printf("Encontra-se na posição X na fila para a especialidade Y\n");
         }
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");
