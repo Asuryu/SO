@@ -177,7 +177,14 @@ void *consolaAdministrador(void *vargp){
             }
         }
             
-        else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
+        else if(!strcmp(sintomas, "especialistas\n")){
+            printf("\n[BALCÃO] A listar todos os especialistas:\n");
+            for(int i=0; i < b.nClientesAtivos; i++)
+            {
+                printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
+            }
+        }
+
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
         else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
         else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");
