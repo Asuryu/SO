@@ -179,7 +179,7 @@ void *consolaAdministrador(void *vargp){
             
         else if(!strcmp(sintomas, "especialistas\n")){
             printf("\n[BALCÃO] A listar todos os especialistas:\n");
-            for(int i=0; i < b.nClientesAtivos; i++)
+            for(int i=0; i < b.nMedicosAtivos; i++)
             {
                 printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
             }
