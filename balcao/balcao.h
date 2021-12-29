@@ -16,6 +16,7 @@ typedef struct Balcao {
     int nClientesAtivos, nMedicosAtivos;
     struct Medico medicos[MAX];
     struct Cliente clientes[MAX];
+    struct Cliente clienteEspera[MAX];
 } balcao, *balcao_ptr;
 
 #endif //BALCAO

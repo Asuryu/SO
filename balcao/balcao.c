@@ -171,7 +171,14 @@ void *consolaAdministrador(void *vargp){
         strcat(sintomas, "\n");
 
         if(!strcmp(sintomas, "#fim\n")) break;
-        else if(!strcmp(sintomas, "utentes\n")) printf("A listar todos os utentes...");
+        else if(!strcmp(sintomas, "utentes\n")){
+            printf("A listar todos os utentes...");
+            for(int i=0; i < b.nClientesAtivos; i++)
+            {
+                printf("\nUtente [%s] %d com o sintoma %s\n", b.clientes[i].nome, b.clientes[i].pid, b.clientes[i].sintomas);
+            }
+        }
+            
         else if(!strcmp(sintomas, "especialistas\n")) printf("A listar todos os especialistas...");
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
         else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
