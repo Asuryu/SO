@@ -10,7 +10,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
-#include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -19,7 +18,6 @@
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 char MEDICO_FIFO_FINAL[MAX];
-int pidBalcao = 0;
 
 int balcaoAberto(){
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
@@ -36,7 +34,6 @@ int main(int argc, char *argv[]){
     printf("     __ __   __          __ __ \n");
     printf("|\\/||_ |  \\|/   /\\ |    (_ /  \\ \n");
     printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n\n");
-    fflush(stdout);
     if(!balcaoAberto()){
         printf("[MÉDICO]\nO balcão está fora de serviço\n");
         return 0;
@@ -44,18 +41,14 @@ int main(int argc, char *argv[]){
     if(argv[1] == NULL || argv[2] == NULL){
         printf("[MÉDICO]\nPor favor insira um nome e uma especialidade\nUtilização: ./medico [nome] [espcialidade]\n");
         return 0;
-    } else printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", argv[1], argv[2]);
+    }
     
-    pthread_t thread_id;
     medico m;
-    resposta r;
 
     sprintf(MEDICO_FIFO_FINAL, MEDICO_FIFO, getpid());
     if(mkfifo(MEDICO_FIFO_FINAL,0666) == -1){
-        if(errno == EEXIST){
-            printf("FIFO ja existe!\n");
-        }
-        printf("Erro ao abrir fifo!\n");
+        printf("[MÉDICO]\nOcorreu um erro ao criar um túnel de comunicação!\n");
+        unlink(MEDICO_FIFO_FINAL);
         return 1;
     }
     
@@ -63,14 +56,40 @@ int main(int argc, char *argv[]){
     strcpy(m.nome, argv[1]); 
     strcpy(m.especialidade, argv[2]);
     int fd_envio = open(BALCAO_FIFO_MED, O_WRONLY);
-    int size = write(fd_envio, &m, sizeof(medico));
+    if(fd_envio == -1){
+        printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
+        close(fd_envio);
+        unlink(MEDICO_FIFO_FINAL);
+        return 1;
+    }
+    int size_s = write(fd_envio, &m, sizeof(medico));
+    if(size_s == -1){
+        printf("\n[MÉDICO]\nOcorreu um erro ao autenticar-se\n");
+        close(fd_envio);
+        unlink(MEDICO_FIFO_FINAL);
+        return 1;
+    }
     char resposta[MAX];
     int fd_recebe = open(MEDICO_FIFO_FINAL, O_RDONLY);
-    int size2 = read(fd_recebe,  resposta, sizeof(resposta));
-    if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
-        printf("\nLimite de Médicos atingido\n");
-    else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
-        printf("\nMédico aceite!\n");
+    if(fd_recebe == -1){
+        printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
+        close(fd_envio);
+        close(fd_recebe);
+        unlink(MEDICO_FIFO_FINAL);
+        return 1;
+    }
+    int size = read(fd_recebe,  resposta, sizeof(resposta));
+    if(size > 0){
+        if(!strcmp("ERROR 400 - LIMITE ATINGIDO", resposta))
+            printf("[MÉDICO]\nNão foi possível conectar ao balcão:\nLimite de médicos atingido\n");
+        else if(!strcmp("SUCCESS 200 - ACEITE", resposta))
+            printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", m.nome, m.especialidade);
+        else
+            printf("[MÉDICO]\nOcorreu um problema ao receber uma resposta do balcão\n");
+    } else {
+        printf("\n[MÉDICO]\nOcorreu um problema ao receber uma resposta do balcão\n");
+    }
+    
     close(fd_recebe);
     close(fd_envio);
     unlink(MEDICO_FIFO_FINAL);

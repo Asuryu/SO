@@ -34,22 +34,25 @@ int onlyBalcao(){
 
 void *aceitarMedicos(void *vargp){
 
-    resposta r;
     balcao b = *((balcao*)vargp);
     medico m;
 
     int fdR = open(BALCAO_FIFO_MED, O_RDONLY | O_NONBLOCK);
+    if(fdR == -1){
+        printf("\n[BALCÃO]\nOcorreu um erro ao abrir o pipe BALCAO_FIFO_MED\n");
+        return NULL;
+    }
     do
     {   
         int flag = 0;
         int size = read(fdR, &m, sizeof(m));
         if(size > 0){
             for(int i = 0; i < b.nMedicosAtivos; i++){
-            if(m.pid == b.medicos[i].pid){
-                flag = 1;
-                break;
+                if(m.pid == b.medicos[i].pid){
+                    flag = 1;
+                    break;
+                }
             }
-        }
             if(b.nMedicosAtivos < b.nMedicosMax && flag == 0 && m.pid != 0){
                 b.medicos[b.nMedicosAtivos] = m;
                 b.nMedicosAtivos++;
@@ -57,14 +60,26 @@ void *aceitarMedicos(void *vargp){
                 
                 sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
-                int size = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
+                if(fd_envio == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o médico com PID %d\n", m.pid);
+                }
+                int size2 = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
+                if(size2 == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao médico com PID %d\n", m.pid);
+                }
             } else {
                 // Médico não aceite
                 printf("\n[PID %d] Médico: %s (%s) --> Não aceite\n", m.pid, m.nome, m.especialidade);
                 
                 sprintf(FIFO_FINAL, MEDICO_FIFO, m.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
-                int size = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+                if(fd_envio == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o médico com PID %d\n", m.pid);
+                }
+                int size2 = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+                if(size2 == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao médico com PID %d\n", m.pid);
+                }
                 
             }
         }
@@ -74,17 +89,19 @@ void *aceitarMedicos(void *vargp){
 
 void *aceitarClientes(void *vargp){
 
-    resposta r;
     balcao b = *((balcao*)vargp);
     cliente c;
 
     int fdR = open(BALCAO_FIFO_CLI, O_RDONLY | O_NONBLOCK);
+    if(fdR == -1){
+        printf("\n[BALCÃO]\nOcorreu um erro ao abrir o pipe BALCAO_FIFO_CLI\n");
+        return NULL;
+    }
     do
     {   
         int flag = 0;
         int size = read(fdR, &c, sizeof(c));
         if(size > 0){
-            
             for(int i = 0; i < b.nClientesAtivos; i++){
                 if(c.pid == b.clientes[i].pid){
                     flag = 1;
@@ -94,17 +111,29 @@ void *aceitarClientes(void *vargp){
             if(b.nClientesAtivos < b.nClientesMax && flag == 0 && c.pid != 0){
                 b.clientes[b.nClientesAtivos] = c;
                 b.nClientesAtivos++;
-                printf("\n[PID %d] Cliente: %s (%s)\n", c.pid, c.nome, c.sintomas);
+                printf("\n[PID %d] Cliente: %s\n", c.pid, c.nome);
                 
                 sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
-                int size = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
+                if(fd_envio == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);
+                }
+                int size2 = write(fd_envio, "SUCCESS 200 - ACEITE", sizeof("SUCCESS 200 - ACEITE"));
+                if(size2 == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
+                }
             } else {
-                printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
+                printf("\n[PID %d] Cliente: %s --> Não aceite\n", c.pid, c.nome);
 
                 sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); //Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
-                int size = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+                if(fd_envio == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);
+                }
+                int size2 = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+                if(size2 == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
+                }
             }
         }
     } while (1);
@@ -157,6 +186,7 @@ void *consolaAdministrador(void *vargp){
     wait(NULL); // Esperar que o processo filho termine
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
     close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão
+    return NULL;
 }
 
 int main(int argc, char *argv[]){
@@ -164,15 +194,13 @@ int main(int argc, char *argv[]){
     printf("\033[2J\033[1;1H");
     printf("     __ __   __          __ __ \n");
     printf("|\\/||_ |  \\|/   /\\ |    (_ /  \\ \n");
-    printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n\n");
-    printf("[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
+    printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n");
+    printf("\n[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
     fflush(stdout);
     
     pthread_t thread_id;
     balcao b;
-    resposta r;
 
-    int fd;
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
 
@@ -199,30 +227,39 @@ int main(int argc, char *argv[]){
 
     // Criação do FIFO do Balcão
     if(mkfifo(BALCAO_FIFO,0666) == -1){
-        if(errno == EEXIST){
-            printf("FIFO ja existe!\n");
-        }
-        printf("Erro ao abrir fifo!\n");
+        printf("\n[BALCÃO] Ocorreu um erro ao criar o pipe BALCAO_FIFO!\n");
         return 0;
     }
     if(mkfifo(BALCAO_FIFO_MED,0666) == -1){
-        if(errno == EEXIST){
-            printf("FIFO ja existe!\n");
-        }
-        printf("Erro ao abrir fifo!\n");
+        printf("\n[BALCÃO] Ocorreu um erro ao criar o pipe BALCAO_FIFO_MED!\n");
         return 0;
     }
     if(mkfifo(BALCAO_FIFO_CLI,0666) == -1){
-        if(errno == EEXIST){
-            printf("FIFO ja existe!\n");
-        }
-        printf("Erro ao abrir fifo!\n");
+        printf("\n[BALCÃO] Ocorreu um erro ao criar o pipe BALCAO_FIFO_CLI!\n");
         return 0;
     }
 
-    pthread_create(&thread_id, NULL, aceitarMedicos, &b);
-    pthread_create(&thread_id, NULL, aceitarClientes, &b);
-    pthread_create(&thread_id, NULL, consolaAdministrador, &b);
+    if(pthread_create(&thread_id, NULL, aceitarMedicos, &b)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarMedicos!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
+    if(pthread_create(&thread_id, NULL, aceitarClientes, &b)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarClientes!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
+    if(pthread_create(&thread_id, NULL, consolaAdministrador, &b)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread consolaAdministrador!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
     pthread_join(thread_id, NULL);
 
     unlink(BALCAO_FIFO);
