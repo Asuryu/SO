@@ -22,6 +22,7 @@
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 char FIFO_FINAL[MAX];
+balcao b;
 
 int onlyBalcao(){
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
@@ -34,7 +35,6 @@ int onlyBalcao(){
 
 void *aceitarMedicos(void *vargp){
 
-    balcao b = *((balcao*)vargp);
     medico m;
 
     int fdR = open(BALCAO_FIFO_MED, O_RDONLY | O_NONBLOCK);
@@ -89,7 +89,6 @@ void *aceitarMedicos(void *vargp){
 
 void *aceitarClientes(void *vargp){
 
-    balcao b = *((balcao*)vargp);
     cliente c;
 
     int fdR = open(BALCAO_FIFO_CLI, O_RDONLY | O_NONBLOCK);
@@ -147,7 +146,6 @@ void *consolaAdministrador(void *vargp){
 
     char sintomas[MAX];
     char analise[MAX];
-    balcao b = *((balcao*)vargp); // Struct do tipo balcão
     
     pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
     pipe(b.unpipeCB); // Criação do pipe Classificador -> Balcão
@@ -172,10 +170,10 @@ void *consolaAdministrador(void *vargp){
 
         if(!strcmp(sintomas, "#fim\n")) break;
         else if(!strcmp(sintomas, "utentes\n")){
-            printf("A listar todos os utentes...");
+            printf("\n[BALCÃO] A listar todos os utentes:\n");
             for(int i=0; i < b.nClientesAtivos; i++)
             {
-                printf("\nUtente [%s] %d com o sintoma %s\n", b.clientes[i].nome, b.clientes[i].pid, b.clientes[i].sintomas);
+                printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
             }
         }
             
@@ -210,7 +208,6 @@ int main(int argc, char *argv[]){
     fflush(stdout);
     
     pthread_t thread_id;
-    balcao b;
 
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
@@ -250,21 +247,21 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-    if(pthread_create(&thread_id, NULL, aceitarMedicos, &b)){
+    if(pthread_create(&thread_id, NULL, aceitarMedicos, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarMedicos!\n");
         unlink(BALCAO_FIFO);
         unlink(BALCAO_FIFO_MED);
         unlink(BALCAO_FIFO_CLI);
         return 0;
     }
-    if(pthread_create(&thread_id, NULL, aceitarClientes, &b)){
+    if(pthread_create(&thread_id, NULL, aceitarClientes, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarClientes!\n");
         unlink(BALCAO_FIFO);
         unlink(BALCAO_FIFO_MED);
         unlink(BALCAO_FIFO_CLI);
         return 0;
     }
-    if(pthread_create(&thread_id, NULL, consolaAdministrador, &b)){
+    if(pthread_create(&thread_id, NULL, consolaAdministrador, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread consolaAdministrador!\n");
         unlink(BALCAO_FIFO);
         unlink(BALCAO_FIFO_MED);
