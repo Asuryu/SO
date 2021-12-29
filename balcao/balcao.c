@@ -125,7 +125,7 @@ void *aceitarClientes(void *vargp){
                 // PEDIR AO CLASSIFICADOR PARA CLASSIFICAR OS SINTOMAS
                 // ENVIAR AO CLIENTE O RESULTADO
                 // IDEIA: Criar função para enviar uma mensagem para o classificador
-            
+                
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
 
