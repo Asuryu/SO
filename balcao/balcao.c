@@ -190,7 +190,7 @@ void *consolaAdministrador(void *vargp){
             printf("\n[BALCÃO] A listar todos os especialistas (%d):\n", b.nMedicosAtivos);
             for(int i=0; i < b.nMedicosAtivos; i++)
             {
-                printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);~
+                printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
             }
             if(b.nMedicosAtivos == b.nMedicosMax)
                 printf("\nTodos os médicos encontram-se em serviço.");
