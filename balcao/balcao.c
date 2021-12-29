@@ -137,6 +137,9 @@ void *aceitarClientes(void *vargp){
                 if(size2 == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
                 }
+
+                b.clienteEspera[b.nClientesEspera] = c;
+                b.nClientesEspera++;
             }
         }
     } while (1);
@@ -175,8 +178,12 @@ void *consolaAdministrador(void *vargp){
             {
                 printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
             }
+            printf("\n[BALCÃO] A listar todos os utentes em espera:\n");
+            for(int i=0; i < b.nClientesEspera; i++)
+            {
+                printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
+            }
         }
-            
         else if(!strcmp(sintomas, "especialistas\n")){
             printf("\n[BALCÃO] A listar todos os especialistas:\n");
             for(int i=0; i < b.nMedicosAtivos; i++)
@@ -184,7 +191,6 @@ void *consolaAdministrador(void *vargp){
                 printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
             }
         }
-
         else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
         else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
         else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");

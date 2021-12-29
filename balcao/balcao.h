@@ -14,6 +14,7 @@ typedef struct Balcao {
     int unpipeBC[2], unpipeCB[2];
     int nClientesMax, nMedicosMax;
     int nClientesAtivos, nMedicosAtivos;
+    int nClientesEspera;
     struct Medico medicos[MAX];
     struct Cliente clientes[MAX];
     struct Cliente clienteEspera[MAX];
