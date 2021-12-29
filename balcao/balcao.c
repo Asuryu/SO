@@ -178,10 +178,12 @@ void *consolaAdministrador(void *vargp){
             {
                 printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
             }
-            printf("\n[BALCÃO] A listar todos os utentes em espera:\n");
-            for(int i=0; i < b.nClientesEspera; i++)
-            {
-                printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
+            if(b.nClientesEspera > 0){
+                printf("\n[BALCÃO] A listar todos os utentes em espera (%d):\n", b.nClientesEspera);
+                for(int i=0; i < b.nClientesEspera; i++)
+                {
+                    printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
+                }
             }
         }
         else if(!strcmp(sintomas, "especialistas\n")){
