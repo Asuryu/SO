@@ -173,7 +173,7 @@ void *consolaAdministrador(void *vargp){
 
         if(!strcmp(sintomas, "#fim\n")) break;
         else if(!strcmp(sintomas, "utentes\n")){
-            printf("\n[BALCÃO] A listar todos os utentes:\n");
+            printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
             for(int i=0; i < b.nClientesAtivos; i++)
             {
                 printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
@@ -187,7 +187,7 @@ void *consolaAdministrador(void *vargp){
             }
         }
         else if(!strcmp(sintomas, "especialistas\n")){
-            printf("\n[BALCÃO] A listar todos os especialistas:\n");
+            printf("\n[BALCÃO] A listar todos os especialistas (%d):\n", b.nMedicosAtivos);
             for(int i=0; i < b.nMedicosAtivos; i++)
             {
                 printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
