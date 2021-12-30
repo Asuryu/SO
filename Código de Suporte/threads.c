@@ -27,7 +27,7 @@ int main()
     pthread_t thread_id;
     printf("Before Thread\n");
     pthread_create(&thread_id, NULL, myThreadFun, NULL);
-    pthread_create(&thread_id, NULL, myThreadFun2, NULL);
+    //pthread_create(&thread_id, NULL, myThreadFun2, NULL);
     pthread_join(thread_id, NULL);
     while(1){
         printf("Esketit");

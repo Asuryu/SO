@@ -22,9 +22,11 @@
 #define CLIENTE_FIFO "../CLIENTE[%d]"
 #define MEDICO_FIFO "../MEDICO[%d]"
 
+pthread_t thread_id;
 char FIFO_FINAL[MAX];
 char **args;
 balcao b;
+int delay = 0;
 
 int onlyBalcao(){
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
@@ -147,23 +149,20 @@ void *aceitarClientes(void *vargp){
     } while (1);
 }
 
-
-void ListaEspera(int signum){
-    for(int i = 0; i < b.nClientesEspera; i++){
-        printf("Cliente %s em lista de espera %d", b.clienteEspera->nome, b.clientes->pid);
-    };
-};
-
 void *TemporizadorAlarme(void *vargp){
-    struct sigaction sa;
-    sa.sa_handler = ListaEspera;
-    sa.sa_flags = SA_RESTART | SA_SIGINFO;
-    sigaction(SIGALRM, &sa, NULL);
-  
+
     while(1){
-        alarm(10);
-        pause();
+        if(b.nClientesEspera == 0){
+            printf("\n[BALCÃO] Não há utentes em espera\n");
+        } else {
+            printf("[BALCÃO] Existem %d utentes em espera:\n", b.nClientesEspera);
+            for(int i = 0; i < b.nClientesEspera; i++){
+                printf("Cliente %s com PID %d em espera\n", b.clienteEspera[i].nome, b.clienteEspera[i].pid);
+            }
+        }
+        sleep(delay);
     }
+
 };
 
 void *consolaAdministrador(void *vargp){
@@ -296,10 +295,10 @@ void *consolaAdministrador(void *vargp){
                 int seconds = atoi(args[1]);
                 if(seconds != 0){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
-                    printf("Estão %d utentes em lista de espera", b.nClientesEspera); 
-                    pthread_t thread_id;
-                    pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL);
-                    pthread_join(thread_id, NULL);
+                    printf("\nEstão %d utentes em lista de espera", b.nClientesEspera); 
+                    // delay = seconds;
+                    // pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL);
+
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
                 }
@@ -339,8 +338,6 @@ int main(int argc, char *argv[]){
     printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n");
     printf("\n[BALCÃO]\nBem vindo ao MEDICALso, Administrador");
     fflush(stdout);
-    
-    pthread_t thread_id;
 
     char *med_env = getenv("MAXMEDICOS");
     char *clt_env = getenv("MAXCLIENTES");
