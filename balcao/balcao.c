@@ -229,19 +229,23 @@ void *consolaAdministrador(void *vargp){
             else{
                 int flag = 0;
                 int pid = atoi(args[1]);
-                int j = 0;
-                for(int i=0; i < b.nClientesAtivos; i++){
-                    if(b.clientes[i].pid == pid){
-                        j = i;
-                        flag = 1;
-                        break;
+                if(pid != 0){
+                    int j = 0;
+                    for(int i=0; i < b.nClientesAtivos; i++){
+                        if(b.clientes[i].pid == pid){
+                            j = i;
+                            flag = 1;
+                            break;
+                        }
                     }
-                }
-                if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe", pid);
-                else{
-                    printf("\n[BALCÃO] O utente com o PID %d foi removido", pid);
-                    b.clientes[j] = b.clientes[b.nClientesAtivos - 1];
-                    b.nClientesAtivos--;
+                    if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe", pid);
+                    else{
+                        printf("\n[BALCÃO] O utente com o PID %d foi removido", pid);
+                        b.clientes[j] = b.clientes[b.nClientesAtivos - 1];
+                        b.nClientesAtivos--;
+                    }
+                } else {
+                    printf("\n[BALCÃO] Introduza um número válido");
                 }
             }
         }
@@ -250,19 +254,23 @@ void *consolaAdministrador(void *vargp){
             else{
                 int flag = 0;
                 int pid = atoi(args[1]);
-                int j = 0;
-                for(int i=0; i < b.nMedicosAtivos; i++){
-                    if(b.medicos[i].pid == pid){
-                        j = i;
-                        flag = 1;
-                        break;
+                if(pid != 0){
+                    int j = 0;
+                    for(int i=0; i < b.nMedicosAtivos; i++){
+                        if(b.medicos[i].pid == pid){
+                            j = i;
+                            flag = 1;
+                            break;
+                        }
                     }
-                }
-                if(flag = 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
-                else{
-                    printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
-                    b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
-                    b.nMedicosAtivos--;
+                    if(flag = 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
+                    else{
+                        printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
+                        b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
+                        b.nMedicosAtivos--;
+                    }
+                } else {
+                    printf("\n[BALCÃO] Introduza um número válido");
                 }
             }
         }
