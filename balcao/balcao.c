@@ -197,16 +197,18 @@ void *consolaAdministrador(void *vargp){
         if(!strcmp(sintomas, "#fim")) break;
         else if(!strcmp(args[0], "utentes")){
             if(i != 1) printf("\n[BALCÃO] O comando 'utentes' não requer argumentos adicionais");
-            printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
-            for(int i=0; i < b.nClientesAtivos; i++)
-            {
-                printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
-            }
-            if(b.nClientesEspera > 0){
-                printf("\n[BALCÃO] A listar todos os utentes em espera (%d):\n", b.nClientesEspera);
-                for(int i=0; i < b.nClientesEspera; i++)
+            else {
+                printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
+                for(int i=0; i < b.nClientesAtivos; i++)
                 {
-                    printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
+                    printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
+                }
+                if(b.nClientesEspera > 0){
+                    printf("\n[BALCÃO] A listar todos os utentes em espera (%d):\n", b.nClientesEspera);
+                    for(int i=0; i < b.nClientesEspera; i++)
+                    {
+                        printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
+                    }
                 }
             }
         }
