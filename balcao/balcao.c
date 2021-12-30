@@ -153,9 +153,9 @@ void *TemporizadorAlarme(void *vargp){
 
     while(1){
         if(b.nClientesEspera == 0){
-            printf("\n[BALCÃO] Não há utentes em espera\n");
+            printf("\n\n[BALCÃO] Não há utentes em espera\n");
         } else {
-            printf("[BALCÃO] Existem %d utentes em espera:\n", b.nClientesEspera);
+            printf("\n\n[BALCÃO] Existem %d utentes em espera:\n", b.nClientesEspera);
             for(int i = 0; i < b.nClientesEspera; i++){
                 printf("Cliente %s com PID %d em espera\n", b.clienteEspera[i].nome, b.clienteEspera[i].pid);
             }
