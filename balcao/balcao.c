@@ -244,9 +244,7 @@ void *consolaAdministrador(void *vargp){
                         b.clientes[j] = b.clientes[b.nClientesAtivos - 1];
                         b.nClientesAtivos--;
                     }
-                } else {
-                    printf("\n[BALCÃO] Introduza um número válido");
-                }
+                } else printf("\n[BALCÃO] Introduza um número válido");
             }
         }
         else if(!strcmp(args[0], "delesp")){
@@ -263,15 +261,13 @@ void *consolaAdministrador(void *vargp){
                             break;
                         }
                     }
-                    if(flag = 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
+                    if(flag == 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
                     else{
                         printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
                         b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
                         b.nMedicosAtivos--;
                     }
-                } else {
-                    printf("\n[BALCÃO] Introduza um número válido");
-                }
+                } else printf("\n[BALCÃO] Introduza um número válido");
             }
         }
         else if(!strcmp(args[0], "freq")){
@@ -304,6 +300,7 @@ void *consolaAdministrador(void *vargp){
         free(args);
     }
     write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
+    printf("\n[BALCÃO] A encerrar o balcão...\n");
     wait(NULL); // Esperar que o processo filho termine
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
     close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão 
