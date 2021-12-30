@@ -284,7 +284,6 @@ void *consolaAdministrador(void *vargp){
         else if(!strcmp(args[0], "encerra")){
             if(i != 1) printf("\n[BALCÃO] O comando 'encerra' não requer argumentos adicionais");
             else{
-                printf("\n[BALCÃO] A encerrar o balcão...\n");
                 break;
             }
         }
