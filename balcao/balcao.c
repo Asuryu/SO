@@ -22,6 +22,7 @@
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 char FIFO_FINAL[MAX];
+char **args;
 balcao b;
 
 int onlyBalcao(){
@@ -148,6 +149,7 @@ void *aceitarClientes(void *vargp){
 void *consolaAdministrador(void *vargp){
 
     char sintomas[MAX];
+    char sintomasFinais[MAX];
     char analise[MAX];
     
     pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
@@ -166,13 +168,35 @@ void *consolaAdministrador(void *vargp){
     }
     while (1){ // Ciclo para pedir os sintomas ao utilizador
         strcpy(analise,"");
-        printf("\nIndique os seus sintomas (debug): ");
-        fgets(sintomas, sizeof(sintomas), stdin);
-        sintomas[strlen(sintomas) - 1] = '\0';
-        strcat(sintomas, "\n");
+        strcpy(sintomas,"");
+        strcpy(sintomasFinais,"");
 
-        if(!strcmp(sintomas, "#fim\n")) break;
-        else if(!strcmp(sintomas, "utentes\n")){
+        // Get sintomas do utilizador
+        // Prevent user from inputting blank lines
+        printf("\nIntroduza um sintoma (debug): ");
+        do{
+            fgets(sintomas, MAX, stdin);
+            if(strcmp(sintomas, "\n") == 0){
+                printf("Introduza um sintoma (debug): ");
+            }
+        } while (strcmp(sintomas, "\n") == 0);
+        sintomas[strlen(sintomas) - 1] = '\0';
+        strcpy(sintomasFinais, sintomas);
+        
+        // Separar a string sintomas por espaços em várias strings e guardar no vetor args (strtok)
+        args = (char**)malloc(sizeof(char*)*MAX);
+        int i = 0;
+        char *token = strtok(sintomas, " ");
+        while(token != NULL){
+            args[i] = token;
+            token = strtok(NULL, " ");
+            i++;
+        }
+        args[i] = NULL;
+
+        if(!strcmp(sintomas, "#fim")) break;
+        else if(!strcmp(args[0], "utentes")){
+            if(i != 1) printf("\n[BALCÃO] O comando 'utentes' não requer argumentos adicionais");
             printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
             for(int i=0; i < b.nClientesAtivos; i++)
             {
@@ -186,32 +210,90 @@ void *consolaAdministrador(void *vargp){
                 }
             }
         }
-        else if(!strcmp(sintomas, "especialistas\n")){
-            printf("\n[BALCÃO] A listar todos os especialistas (%d):\n", b.nMedicosAtivos);
-            for(int i=0; i < b.nMedicosAtivos; i++)
-            {
-                printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
+        else if(!strcmp(args[0], "especialistas")){
+            if(i != 1) printf("\n[BALCÃO] O comando 'especialistas' não requer argumentos adicionais");
+            else{
+                printf("\n[BALCÃO] A listar todos os especialistas (%d):\n", b.nMedicosAtivos);
+                for(int i=0; i < b.nMedicosAtivos; i++)
+                {
+                    printf("Médico [%d] %s com a especialidade %s\n", b.medicos[i].pid, b.medicos[i].nome, b.medicos[i].especialidade);
+                }
+                if(b.nMedicosAtivos == b.nMedicosMax)
+                    printf("\nTodos os médicos encontram-se em serviço.");
             }
-            if(b.nMedicosAtivos == b.nMedicosMax)
-                printf("\nTodos os médicos encontram-se em serviço.");
         }
-        else if(!strncmp(sintomas, "delut", strlen("delut"))) printf("Utilizador XYZ removido");
-        else if(!strncmp(sintomas, "delesp", strlen("delesp"))) printf("Especialista XYZ removido");
-        else if(!strncmp(sintomas, "freq", strlen("freq"))) printf("A apresentar a ocupação das filas de X em X segundos...");
-        else if(!strcmp(sintomas, "encerra\n")) break;
+        else if(!strcmp(args[0], "delut")){
+            if(i != 2) printf("\n[BALCÃO] O comando 'delut' requer apenas um argumento (PID)");
+            else{
+                int flag = 0;
+                int pid = atoi(args[1]);
+                int j = 0;
+                for(int i=0; i < b.nClientesAtivos; i++){
+                    if(b.clientes[i].pid == pid){
+                        j = i;
+                        flag = 1;
+                        break;
+                    }
+                }
+                if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe", pid);
+                else{
+                    printf("\n[BALCÃO] O utente com o PID %d foi removido", pid);
+                    b.clientes[j] = b.clientes[b.nClientesAtivos - 1];
+                    b.nClientesAtivos--;
+                }
+            }
+        }
+        else if(!strcmp(args[0], "delesp")){
+            if(i != 2) printf("\n[BALCÃO] O comando 'delesp' requer apenas um argumento (PID)");
+            else{
+                int flag = 0;
+                int pid = atoi(args[1]);
+                int j = 0;
+                for(int i=0; i < b.nMedicosAtivos; i++){
+                    if(b.medicos[i].pid == pid){
+                        j = i;
+                        flag = 1;
+                        break;
+                    }
+                }
+                if(flag = 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
+                else{
+                    printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
+                    b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
+                    b.nMedicosAtivos--;
+                }
+            }
+        }
+        else if(!strcmp(args[0], "freq")){
+            if(i != 2) printf("\n[BALCÃO] O comando 'freq' requer apenas um argumento (segundos)");
+            else {
+                int seconds = atoi(args[1]);
+                printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
+            }
+        }
+        else if(!strcmp(args[0], "encerra")){
+            if(i != 1) printf("\n[BALCÃO] O comando 'encerra' não requer argumentos adicionais");
+            else{
+                printf("\n[BALCÃO] A encerrar o balcão...\n");
+                break;
+            }
+        }
         else {
-            write(b.unpipeBC[1], sintomas, strlen(sintomas)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
+            strcat(sintomasFinais, "\n");
+            write(b.unpipeBC[1], sintomasFinais, strlen(sintomasFinais)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
             int tmp = read(b.unpipeCB[0], analise, MAX); // Ler para a variável análise o conteúdo existente no pipe Classificador -> Balcão
             analise[tmp-1]= '\0';
             printf("O classificador retornou: %s", analise);
             fflush(stdout);
             fflush(stdin);
         }
+        free(args);
     }
     write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
     wait(NULL); // Esperar que o processo filho termine
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
-    close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão
+    close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão 
+    free(args);
     return NULL;
 }
 
