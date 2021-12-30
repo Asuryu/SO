@@ -282,7 +282,7 @@ void *consolaAdministrador(void *vargp){
                         printf("DEUUUU %d", temporizador);
                         temporizador++;
                         wait(seconds);
-                    }while(true);
+                    }while(1);
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
                 }
