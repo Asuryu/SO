@@ -298,7 +298,7 @@ void *consolaAdministrador(void *vargp){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
                     printf("Estão %d utentes em lista de espera", b.nClientesEspera); 
                     pthread_t thread_id;
-                    pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL)
+                    pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL);
                     pthread_join(thread_id, NULL);
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
