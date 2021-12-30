@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 
 #define BALCAO_FIFO "../MEDICALso"
@@ -146,6 +147,25 @@ void *aceitarClientes(void *vargp){
     } while (1);
 }
 
+
+void ListaEspera(int signum){
+    for(int i = 0; i < b.nClientesEspera, i++){
+        printf("Cliente %s em lista de espera %d", b.clienteEspera->nome, b.clientes->pid);
+    };
+};
+
+void *TemporizadorAlarme(void *vargp){
+    struct sigaction sa;
+    sa.sa_handler = ListaEspera;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigaction(SIGALRM, &sa, NULL);
+  
+    while(1){
+        alarm(10);
+        pause();
+    }
+};
+
 void *consolaAdministrador(void *vargp){
 
     char sintomas[MAX];
@@ -276,13 +296,10 @@ void *consolaAdministrador(void *vargp){
                 int seconds = atoi(args[1]);
                 if(seconds != 0){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
-                    printf("Estão %d utentes em lista de espera", b.nClientesEspera);
-                    int temporizador = 0;
-                    do{
-                        printf("DEUUUU %d", temporizador);
-                        temporizador++;
-                        wait(seconds);
-                    }while(1);
+                    printf("Estão %d utentes em lista de espera", b.nClientesEspera); 
+                    pthread_t thread_id;
+                    pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL)
+                    pthread_join(thread_id, NULL);
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
                 }
