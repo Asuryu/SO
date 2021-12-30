@@ -278,7 +278,11 @@ void *consolaAdministrador(void *vargp){
             if(i != 2) printf("\n[BALCÃO] O comando 'freq' requer apenas um argumento (segundos)");
             else {
                 int seconds = atoi(args[1]);
-                printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
+                if(seconds != 0){
+                    printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
+                } else {
+                    printf("\n[BALCÃO] Introduza um número válido");
+                }
             }
         }
         else if(!strcmp(args[0], "encerra")){
