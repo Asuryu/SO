@@ -276,6 +276,13 @@ void *consolaAdministrador(void *vargp){
                 int seconds = atoi(args[1]);
                 if(seconds != 0){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
+                    printf("Estão %d utentes em lista de espera", b.nClientesEspera);
+                    int temporizador = 0;
+                    do{
+                        printf("DEUUUU %d", temporizador);
+                        temporizador++;
+                        wait(seconds);
+                    }while(true);
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
                 }
