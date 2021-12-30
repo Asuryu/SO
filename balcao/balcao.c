@@ -149,7 +149,7 @@ void *aceitarClientes(void *vargp){
 
 
 void ListaEspera(int signum){
-    for(int i = 0; i < b.nClientesEspera, i++){
+    for(int i = 0; i < b.nClientesEspera; i++){
         printf("Cliente %s em lista de espera %d", b.clienteEspera->nome, b.clientes->pid);
     };
 };
