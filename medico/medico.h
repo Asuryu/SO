@@ -13,6 +13,8 @@ typedef struct Medico {
     int pid;
     char nome[MAX];
     char especialidade[MAX];
+    int alive;
+    int ocupado;
 } medico, *medico_ptr;
 
 #endif //MEDICO

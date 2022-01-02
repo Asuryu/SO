@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <pthread.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,10 +18,46 @@
 #define BALCAO_FIFO_CLI "../MEDICALsoCLI"
 #define CLIENTE_FIFO "../CLIENTE[%d]"
 
-char CLIENTE_FIFO_FINAL[MAX];
+typedef struct Vida {
+    int pid;
+    char tipo[MAX];
+} vida, *vida_ptr;
 
-void handler_funcSignal(int signum){ // Para o sa_handler com (completo - PIDs, etc...)
-    printf("\nEstou vivo meu puto!\n");
+char CLIENTE_FIFO_FINAL[MAX];
+pthread_t thread_id;
+int fd_recebe, fd_envio;
+
+void fecharCliente(int signum){
+    printf("\n[CLIENTE]\nO cliente foi desconectado\n");
+    close(fd_recebe);
+    close(fd_envio);
+    unlink(CLIENTE_FIFO_FINAL);
+    exit(0);
+}
+
+void enviaSinalVida(int signum){
+    vida v;
+    v.pid = getpid();
+    strcpy(v.tipo, "CLIENTE");
+    int fd_balcao = open(BALCAO_FIFO, O_WRONLY | O_NONBLOCK);
+    if(fd_balcao == -1){
+        printf("[CLIENTE]\nOcorreu um erro ao enviar o sinal de vida!\n");
+        fecharCliente(0);
+    }
+    write(fd_balcao, &v, sizeof(vida));
+}
+
+void *threadVida(void *vargp){
+    struct sigaction sa;
+    sa.sa_handler = enviaSinalVida;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigaction(SIGALRM, &sa, NULL);
+
+    // Enviar sinal de vida a cada 5 segundos
+    while (1){
+        sleep(SINAL_VIDA);
+        kill(getpid(), SIGALRM);
+    }
 }
 
 int balcaoAberto(){
@@ -49,6 +86,11 @@ int main(int argc, char *argv[]){
 
     cliente c;
 
+    struct sigaction sa;
+    sa.sa_handler = fecharCliente;
+    sa.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigaction(SIGINT, &sa, NULL);
+
     sprintf(CLIENTE_FIFO_FINAL, CLIENTE_FIFO, getpid());
     if(mkfifo(CLIENTE_FIFO_FINAL,0666) == -1){
         printf("\n[CLIENTE]\nOcorreu um erro ao criar um túnel de comunicação!\n");
@@ -58,9 +100,10 @@ int main(int argc, char *argv[]){
 
     printf("Introduza os seus sintomas: ");
     scanf("%[^\n]", c.sintomas);
+    c.alive = 1;
     c.pid = getpid();
     strcpy(c.nome, argv[1]);
-    int fd_envio = open(BALCAO_FIFO_CLI, O_WRONLY);
+    fd_envio = open(BALCAO_FIFO_CLI, O_WRONLY);
     if(fd_envio == -1){
         printf("\n[CLIENTE]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
         close(fd_envio);
@@ -75,7 +118,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
     char resposta[MAX];
-    int fd_recebe = open(CLIENTE_FIFO_FINAL, O_RDONLY);
+    fd_recebe = open(CLIENTE_FIFO_FINAL, O_RDONLY);
     if(fd_recebe == -1){
         printf("\n[CLIENTE]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
         close(fd_envio);
@@ -91,6 +134,8 @@ int main(int argc, char *argv[]){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
             printf("Encontra-se na posição X na fila para a especialidade Y\n");
         }
+        pthread_create(&thread_id, NULL, threadVida, NULL);
+        pthread_join(thread_id, NULL);
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");
     }
@@ -98,16 +143,6 @@ int main(int argc, char *argv[]){
     close(fd_recebe);
     close(fd_envio);
     unlink(CLIENTE_FIFO_FINAL);
-
-    // struct sigaction sa;
-    // sa.sa_handler = handler_funcSignal;
-    // sa.sa_flags = SA_RESTART | SA_SIGINFO;
-    // sigaction(SIGALRM, &sa, NULL);
-    // // Criar alarme com o signal
-    // while(1){
-    //     alarm(1);
-    //     pause();
-    // }
 
     return 0;
 }

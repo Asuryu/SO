@@ -23,6 +23,7 @@
 #define MEDICO_FIFO "../MEDICO[%d]"
 
 pthread_t thread_id;
+pthread_t thread_freq;
 char FIFO_FINAL[MAX];
 char **args;
 balcao b;
@@ -35,6 +36,74 @@ int onlyBalcao(){
         return 1;
     }
     return 0;
+}
+
+void *updateVivos(void *vargp){
+    // Ler do pipe MEDICALso e atualizar a lista de vivos
+    int fd_balcao = open(BALCAO_FIFO, O_RDONLY);
+    if(fd_balcao == -1){
+        printf("[BALCAO]\nOcorreu um erro ao abrir o FIFO de leitura!\n");
+        return NULL;
+    }
+    while(1){
+        vida v;
+        int size = read(fd_balcao, &v, sizeof(vida));
+        if(size > 0){
+            if(v.pid == 0){
+                break;
+            }
+            if(strcmp(v.tipo, "MÉDICO") == 0){
+                for(int i = 0; i < b.nMedicosAtivos; i++){
+                    if(b.medicos[i].pid == v.pid){
+                        b.medicos[i].alive = 1;
+                        break;
+                    }
+                }
+            } else if(strcmp(v.tipo, "CLIENTE") == 0){
+                for(int i = 0; i < b.nClientesAtivos; i++){
+                    if(b.clientes[i].pid == v.pid){
+                        b.clientes[i].alive = 1;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void *removerMortos(void *vargp){
+    // Remover mortos da lista de vivos
+    while(1){
+        sleep(SINAL_VIDA);
+        if(b.nMedicosAtivos > 0){
+            for(int i = 0; i < b.nMedicosAtivos; i++){
+                if(b.medicos[i].alive == 0){
+                    for(int j = i; j < b.nMedicosAtivos - 1; j++){
+                        b.medicos[j] = b.medicos[j+1];
+                    }
+                    b.nMedicosAtivos--;
+                }
+                for(int i = 0; i < b.nMedicosAtivos; i++){
+                    b.medicos[i].alive = 0;
+                }
+            }
+        }
+        if(b.nClientesAtivos > 0){
+            for(int i = 0; i < b.nClientesAtivos; i++){
+                if(b.clientes[i].alive == 0){
+                    for(int j = i; j < b.nClientesAtivos - 1; j++){
+                        b.clientes[j] = b.clientes[j+1];
+                    }
+                    b.nClientesAtivos--;
+                }
+                for(int i = 0; i < b.nClientesAtivos; i++){
+                    b.clientes[i].alive = 0;
+                }
+            }
+        }
+    }
+    
+
 }
 
 void *aceitarMedicos(void *vargp){
@@ -94,6 +163,7 @@ void *aceitarMedicos(void *vargp){
 void *aceitarClientes(void *vargp){
 
     cliente c;
+    char resposta[MAX];
 
     int fdR = open(BALCAO_FIFO_CLI, O_RDONLY | O_NONBLOCK);
     if(fdR == -1){
@@ -125,9 +195,14 @@ void *aceitarClientes(void *vargp){
                 if(size2 == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
                 }
-                // PEDIR AO CLASSIFICADOR PARA CLASSIFICAR OS SINTOMAS
-                // ENVIAR AO CLIENTE O RESULTADO
-                // IDEIA: Criar função para enviar uma mensagem para o classificador
+
+                strcpy(resposta,"");
+
+                strcat(c.sintomas, "\n");
+                write(b.unpipeBC[1], c.sintomas, sizeof(c.sintomas));
+                int tmp = read(b.unpipeCB[0], resposta, MAX);
+                resposta[tmp - 1] = '\0';
+                printf("|| %s ||\n", resposta);
                 
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
@@ -170,21 +245,7 @@ void *consolaAdministrador(void *vargp){
     char sintomas[MAX];
     char sintomasFinais[MAX];
     char analise[MAX];
-    
-    pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
-    pipe(b.unpipeCB); // Criação do pipe Classificador -> Balcão
 
-    int pid = fork(); // Criação de um processo filho
-    if(pid == 0){ // Código a correr pelo processo filho
-        close(STDIN_FILENO); // Fecha o STDIN do processo filho
-        close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
-        dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
-        dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
-        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
-    } else { // Código a correr pelo processo pai
-        close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
-        close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
-    }
     while (1){ // Ciclo para pedir os sintomas ao utilizador
         strcpy(analise,"");
         strcpy(sintomas,"");
@@ -192,11 +253,11 @@ void *consolaAdministrador(void *vargp){
 
         // Get sintomas do utilizador
         // Prevent user from inputting blank lines
-        printf("\nIntroduza um sintoma (debug): ");
+        printf("\nIntroduza um comando: ");
         do{
             fgets(sintomas, MAX, stdin);
             if(strcmp(sintomas, "\n") == 0){
-                printf("Introduza um sintoma (debug): ");
+                printf("Introduza um comando: ");
             }
         } while (strcmp(sintomas, "\n") == 0);
         sintomas[strlen(sintomas) - 1] = '\0';
@@ -250,18 +311,19 @@ void *consolaAdministrador(void *vargp){
                 int pid = atoi(args[1]);
                 if(pid != 0){
                     int j = 0;
-                    for(int i=0; i < b.nClientesAtivos; i++){
-                        if(b.clientes[i].pid == pid){
+                    for(int i=0; i < b.nClientesEspera; i++){
+                        if(b.clienteEspera[i].pid == pid){
                             j = i;
                             flag = 1;
                             break;
                         }
                     }
-                    if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe", pid);
+                    if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe ou não se encontra em espera", pid);
                     else{
                         printf("\n[BALCÃO] O utente com o PID %d foi removido", pid);
-                        b.clientes[j] = b.clientes[b.nClientesAtivos - 1];
-                        b.nClientesAtivos--;
+                        b.clienteEspera[j] = b.clienteEspera[b.nClientesEspera - 1];
+                        b.nClientesEspera--;
+                        kill(pid, SIGINT);
                     }
                 } else printf("\n[BALCÃO] Introduza um número válido");
             }
@@ -274,17 +336,18 @@ void *consolaAdministrador(void *vargp){
                 if(pid != 0){
                     int j = 0;
                     for(int i=0; i < b.nMedicosAtivos; i++){
-                        if(b.medicos[i].pid == pid){
+                        if(b.medicos[i].pid == pid && b.medicos[i].ocupado == 0){
                             j = i;
                             flag = 1;
                             break;
                         }
                     }
-                    if(flag == 0) printf("\n[BALCÃO] O médico com o PID %d não existe", pid);
+                    if(flag == 0) printf("\n[BALCÃO] O médico com o PID %d não existe ou está numa consulta", pid);
                     else{
                         printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
                         b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
                         b.nMedicosAtivos--;
+                        kill(pid, SIGINT);
                     }
                 } else printf("\n[BALCÃO] Introduza um número válido");
             }
@@ -296,8 +359,9 @@ void *consolaAdministrador(void *vargp){
                 if(seconds != 0){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
                     printf("\nEstão %d utentes em lista de espera", b.nClientesEspera); 
-                    // delay = seconds;
-                    // pthread_create(&thread_id, NULL, TemporizadorAlarme, NULL);
+                    delay = seconds;
+                    pthread_cancel(thread_freq);
+                    pthread_create(&thread_freq, NULL, TemporizadorAlarme, NULL);
 
                 } else {
                     printf("\n[BALCÃO] Introduza um número válido");
@@ -310,19 +374,19 @@ void *consolaAdministrador(void *vargp){
                 break;
             }
         }
-        else {
-            strcat(sintomasFinais, "\n");
-            write(b.unpipeBC[1], sintomasFinais, strlen(sintomasFinais)); // Escrever para o pipe Balcão -> Classificador o conteúdo da variável sintomas
-            int tmp = read(b.unpipeCB[0], analise, MAX); // Ler para a variável análise o conteúdo existente no pipe Classificador -> Balcão
-            analise[tmp-1]= '\0';
-            printf("O classificador retornou: %s", analise);
-            fflush(stdout);
-            fflush(stdin);
-        }
+        else printf("\n[BALCÃO] Comando inválido");
         free(args);
     }
     write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
     printf("\n[BALCÃO] A encerrar o balcão...\n");
+
+    for(int i = 0; i < b.nMedicosAtivos; i++)
+        kill(b.medicos[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesAtivos; i++)
+        kill(b.clientes[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesEspera; i++)
+        kill(b.clienteEspera[i].pid, SIGINT);
+
     wait(NULL); // Esperar que o processo filho termine
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
     close(b.unpipeCB[0]); // Fecha o read do pipe Classificador -> Balcão 
@@ -377,6 +441,21 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
+    pipe(b.unpipeBC); // Criação do pipe Balcão -> Classificador
+    pipe(b.unpipeCB); // Criação do pipe Classificador -> Balcão
+
+    int pid = fork(); // Criação de um processo filho
+    if(pid == 0){ // Código a correr pelo processo filho
+        close(STDIN_FILENO); // Fecha o STDIN do processo filho
+        close(STDOUT_FILENO); // Fecha o STDOUT do processo filho
+        dup(b.unpipeBC[0]); // Cria uma cópia do file descriptor relativo ao read end do pipe Balcão -> Classificador
+        dup(b.unpipeCB[1]); // Cria uma cópia do file descriptor relativo ao write end do pipe Classificador -> Balcão
+        execl("../classificador", "../classificador", (char*)NULL); // Executa o classificador sem argumentos extra
+    } else { // Código a correr pelo processo pai
+        close(b.unpipeBC[0]); // Fecha o read do pipe Balcão -> Classificador
+        close(b.unpipeCB[1]); // Fecha o write do pipe Classficador -> Balcão
+    }
+
     if(pthread_create(&thread_id, NULL, aceitarMedicos, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarMedicos!\n");
         unlink(BALCAO_FIFO);
@@ -386,6 +465,20 @@ int main(int argc, char *argv[]){
     }
     if(pthread_create(&thread_id, NULL, aceitarClientes, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread aceitarClientes!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
+    if(pthread_create(&thread_id, NULL, updateVivos, NULL)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread updateVivos!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
+    if(pthread_create(&thread_id, NULL, removerMortos, NULL)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread removerMortos!\n");
         unlink(BALCAO_FIFO);
         unlink(BALCAO_FIFO_MED);
         unlink(BALCAO_FIFO_CLI);

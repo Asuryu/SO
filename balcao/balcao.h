@@ -20,4 +20,9 @@ typedef struct Balcao {
     struct Cliente clienteEspera[MAX];
 } balcao, *balcao_ptr;
 
+typedef struct Vida {
+    int pid;
+    char tipo[MAX];
+} vida, *vida_ptr;
+
 #endif //BALCAO
