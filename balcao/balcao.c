@@ -225,7 +225,7 @@ void *aceitarClientes(void *vargp){
             }
         }
         printf("\n Strings or words after split by space are :\n");
-        for(i=0;i < ctr;i++)
+        for(int i=0;i < ctr;i++)
             printf(" %s\n",newString[i]);         
                     
                 } else {
