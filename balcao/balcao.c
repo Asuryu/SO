@@ -207,27 +207,46 @@ void *aceitarClientes(void *vargp){
                 strcpy(c.analise, resposta);
                 int sized = write(fd_envio, &c, sizeof(cliente));
                 printf("%s", c.analise);
-                
-                
-            } else {
-                printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
 
-                sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); // Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
-                int fd_envio = open(FIFO_FINAL, O_WRONLY);
-                if(fd_envio == -1){
-                    printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);
-                }
-                int size2 = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
-                if(size2 == -1){
-                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
-                }
-
-                b.clienteEspera[b.nClientesEspera] = c;
-                b.nClientesEspera++;
+               j=0; ctr=0;
+        for(i=0;i<=(strlen(c.analise));i++)
+        {
+            // if space or NULL found, assign NULL into newString[ctr]
+            if(c.analise[i]==' ')
+            {
+                newString[ctr][j]='\0';
+                ctr++;  //for next word
+                j=0;    //for next word, init index to 0
+            }
+            else
+            {
+                newString[ctr][j]=c.analise[i];
+                j++;
             }
         }
-    } while (1);
-}
+        printf("\n Strings or words after split by space are :\n");
+        for(i=0;i < ctr;i++)
+            printf(" %s\n",newString[i]);         
+                    
+                } else {
+                    printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
+
+                    sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); // Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
+                    int fd_envio = open(FIFO_FINAL, O_WRONLY);
+                    if(fd_envio == -1){
+                        printf("\n[BALCÃO] Ocorreu um erro ao abrir um pipe com o cliente com PID %d\n", c.pid);
+                    }
+                    int size2 = write(fd_envio, "ERROR 400 - LIMITE ATINGIDO", sizeof("ERROR 400 - LIMITE ATINGIDO"));
+                    if(size2 == -1){
+                        printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
+                    }
+
+                    b.clienteEspera[b.nClientesEspera] = c;
+                    b.nClientesEspera++;
+                }
+            }
+        } while (1);
+    }
 
 void *TemporizadorAlarme(void *vargp){
 
