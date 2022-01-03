@@ -14,6 +14,8 @@ typedef struct Cliente {
     char nome[MAX];
     char sintomas[MAX];
     char analise[MAX];
+    int prioridade;
+    int posicaoFila;
     int alive;
 } cliente, *cliente_ptr;
 

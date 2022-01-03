@@ -56,7 +56,7 @@ void *threadVida(void *vargp){
 
     // Enviar sinal de vida a cada 5 segundos
     while (1){
-        sleep(5);
+        sleep(20);
         kill(getpid(), SIGALRM);
     }
 }
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
             read(fd_recebe, &c, sizeof(cliente));
-            printf("Encontra-se na posição X na fila para a especialidade %s\n", c.analise);
+            printf("Encontra-se na posição %d na fila para a especialidade %s\n", c.posicaoFila, c.analise);
             // pthread_create(&thread_id, NULL, threadVida, NULL);
             // pthread_join(thread_id, NULL);
         }

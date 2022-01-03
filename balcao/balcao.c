@@ -38,9 +38,42 @@ int onlyBalcao(){
     return 0;
 }
 
+void mostrarFilas(){
+    if(b.nClientesOftalmologia > 0){
+        printf("\n\n[BALCÃO] Existem %d utentes em espera para OFTALMOLOGIA:\n", b.nClientesOftalmologia);
+        for(int i = 0; i < b.nClientesOftalmologia; i++){
+            printf("Cliente %s com PID %d em espera para %s\n", b.oftalmologia[i].nome, b.oftalmologia[i].pid, b.oftalmologia[i].analise);
+        }
+    } else printf("\n\n[BALCÃO] Não há utentes em espera para OFTALMOLOGIA\n");
+    if(b.nClientesEstomatologia > 0){
+        printf("\n\n[BALCÃO] Existem %d utentes em espera para ESTOMATOLOGIA:\n", b.nClientesEstomatologia);
+        for(int i = 0; i < b.nClientesEstomatologia; i++){
+            printf("Cliente %s com PID %d em espera para %s\n", b.estomatologia[i].nome, b.estomatologia[i].pid, b.estomatologia[i].analise);
+        }
+    } else printf("\n\n[BALCÃO] Não há utentes em espera para ESTOMATOLOGIA\n");
+    if(b.nClientesNeurologia > 0){
+        printf("\n\n[BALCÃO] Existem %d utentes em espera para NEUROLOGIA:\n", b.nClientesNeurologia);
+        for(int i = 0; i < b.nClientesNeurologia; i++){
+            printf("Cliente %s com PID %d em espera para %s\n", b.neurologia[i].nome, b.neurologia[i].pid, b.neurologia[i].analise);
+        }
+    } else printf("\n\n[BALCÃO] Não há utentes em espera para NEUROLOGIA\n");
+    if(b.nClientesOrtopedia > 0){
+        printf("\n\n[BALCÃO] Existem %d utentes em espera para ORTOPEDIA:\n", b.nClientesOrtopedia);
+        for(int i = 0; i < b.nClientesOrtopedia; i++){
+            printf("Cliente %s com PID %d em espera para %s\n", b.ortopedia[i].nome, b.ortopedia[i].pid, b.ortopedia[i].analise);
+        }
+    } else printf("\n\n[BALCÃO] Não há utentes em espera para ORTOPEDIA\n");
+    if(b.nClientesGeral > 0){
+        printf("\n\n[BALCÃO] Existem %d utentes em espera para GERAL:\n", b.nClientesGeral);
+        for(int i = 0; i < b.nClientesGeral; i++){
+            printf("Cliente %s com PID %d em espera para %s\n", b.geral[i].nome, b.geral[i].pid, b.geral[i].analise);
+        }
+    } else printf("\n\n[BALCÃO] Não há utentes em espera para GERAL\n");
+}
+
 void *updateVivos(void *vargp){
     // Ler do pipe MEDICALso e atualizar a lista de vivos
-    int fd_balcao = open(BALCAO_FIFO, O_RDONLY);
+    int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
     if(fd_balcao == -1){
         printf("[BALCAO]\nOcorreu um erro ao abrir o FIFO de leitura!\n");
         return NULL;
@@ -205,9 +238,52 @@ void *aceitarClientes(void *vargp){
                 read(b.unpipeCB[0], resposta, MAX);
                 resposta[strlen(resposta)-1] = '\0';
                 strcpy(c.analise, resposta);
+                
+                char especialidade[MAX];
+                int prioridade;
+                strcpy(especialidade, "");
+                strcat(especialidade, c.analise);
+                especialidade[strlen(especialidade)-2] = '\0';
+                c.prioridade = c.analise[strlen(c.analise)-1] - '0';
+                
+                if(!strcmp(especialidade, "oftalmologia")){
+                    b.oftalmologia[b.nClientesOftalmologia] = c;
+                    b.nClientesOftalmologia++;
+                    // Ordenar todos os utentes por prioridade
+                    for(int i = 0; i < b.nClientesOftalmologia-1; i++){
+                        for(int j = i+1; j < b.nClientesOftalmologia; j++){
+                            if(b.oftalmologia[i].prioridade > b.estomatologia[j].prioridade){
+                                cliente aux = b.oftalmologia[i];
+                                b.oftalmologia[i] = b.oftalmologia[j];
+                                b.oftalmologia[j] = aux;
+                                c.posicaoFila = b.oftalmologia[i].posicaoFila = j;
+                            }
+                        }
+                    }
+                }
+                else if(!strcmp(especialidade, "neurologia")){
+                    b.neurologia[b.nClientesNeurologia] = c;
+                    b.nClientesNeurologia++;
+                    c.posicaoFila = b.nClientesNeurologia;
+                }
+                else if(!strcmp(especialidade, "estomatologia")){
+                    b.estomatologia[b.nClientesEstomatologia] = c;
+                    b.nClientesEstomatologia++;
+                    c.posicaoFila = b.nClientesEstomatologia;
+                }
+                else if(!strcmp(especialidade, "ortopedia")){
+                    b.ortopedia[b.nClientesOrtopedia] = c;
+                    b.nClientesOrtopedia++;
+                    c.posicaoFila = b.nClientesOrtopedia;
+                }
+                else{
+                    b.geral[b.nClientesGeral] = c;
+                    b.nClientesGeral++;
+                    c.posicaoFila = b.nClientesGeral;
+                }
+
                 int sized = write(fd_envio, &c, sizeof(cliente));
-                
-                
+
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
 
@@ -220,9 +296,6 @@ void *aceitarClientes(void *vargp){
                 if(size2 == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
                 }
-
-                b.clienteEspera[b.nClientesEspera] = c;
-                b.nClientesEspera++;
             }
         }
     } while (1);
@@ -231,17 +304,10 @@ void *aceitarClientes(void *vargp){
 void *TemporizadorAlarme(void *vargp){
 
     while(1){
-        if(b.nClientesEspera == 0){
-            printf("\n\n[BALCÃO] Não há utentes em espera\n");
-        } else {
-            printf("\n\n[BALCÃO] Existem %d utentes em espera:\n", b.nClientesEspera);
-            for(int i = 0; i < b.nClientesEspera; i++){
-                printf("Cliente %s com PID %d em espera\n", b.clienteEspera[i].nome, b.clienteEspera[i].pid);
-            }
-        }
+        mostrarFilas();
         sleep(delay);
     }
-
+    
 };
 
 void *consolaAdministrador(void *vargp){
@@ -285,15 +351,9 @@ void *consolaAdministrador(void *vargp){
                 printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
                 for(int i=0; i < b.nClientesAtivos; i++)
                 {
-                    printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
+                    printf("Utente [%d] %s com o sintoma %s está em consulta\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
                 }
-                if(b.nClientesEspera > 0){
-                    printf("\n[BALCÃO] A listar todos os utentes em espera (%d):\n", b.nClientesEspera);
-                    for(int i=0; i < b.nClientesEspera; i++)
-                    {
-                        printf("Utente [%d] %s com o sintoma %s\n", b.clienteEspera[i].pid, b.clienteEspera[i].nome, b.clienteEspera[i].sintomas);
-                    }
-                }
+                mostrarFilas();
             }
         }
         else if(!strcmp(args[0], "especialistas")){
@@ -312,12 +372,46 @@ void *consolaAdministrador(void *vargp){
             if(i != 2) printf("\n[BALCÃO] O comando 'delut' requer apenas um argumento (PID)");
             else{
                 int flag = 0;
+                char esp[MAX];
                 int pid = atoi(args[1]);
                 if(pid != 0){
                     int j = 0;
-                    for(int i=0; i < b.nClientesEspera; i++){
-                        if(b.clienteEspera[i].pid == pid){
+                    for(int i=0; i < b.nClientesEstomatologia; i++){
+                        if(b.estomatologia[i].pid == pid){
                             j = i;
+                            strcpy(esp, "estomatologia");
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    for(int i=0; i < b.nClientesGeral; i++){
+                        if(b.geral[i].pid == pid){
+                            j = i;
+                            strcpy(esp, "geral");
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    for(int i=0; i < b.nClientesNeurologia; i++){
+                        if(b.neurologia[i].pid == pid){
+                            j = i;
+                            strcpy(esp, "neurologia");
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    for(int i=0; i < b.nClientesOrtopedia; i++){
+                        if(b.ortopedia[i].pid == pid){
+                            j = i;
+                            strcpy(esp, "ortopedia");
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    for(int i=0; i < b.nClientesOftalmologia; i++){
+                        if(b.oftalmologia[i].pid == pid){
+                            j = i;
+                            strcpy(esp, "oftalmologia");
                             flag = 1;
                             break;
                         }
@@ -325,8 +419,26 @@ void *consolaAdministrador(void *vargp){
                     if(flag == 0) printf("\n[BALCÃO] O utente com o PID %d não existe ou não se encontra em espera", pid);
                     else{
                         printf("\n[BALCÃO] O utente com o PID %d foi removido", pid);
-                        b.clienteEspera[j] = b.clienteEspera[b.nClientesEspera - 1];
-                        b.nClientesEspera--;
+                        if(!strcmp(esp, "estomatologia")){
+                            b.estomatologia[j] = b.estomatologia[b.nClientesEstomatologia - 1];
+                            b.nClientesEstomatologia--;
+                        }
+                        else if(!strcmp(esp, "geral")){
+                            b.geral[j] = b.geral[b.nClientesGeral - 1];
+                            b.nClientesGeral--;
+                        }
+                        else if(!strcmp(esp, "neurologia")){
+                            b.neurologia[j] = b.neurologia[b.nClientesNeurologia - 1];
+                            b.nClientesNeurologia--;
+                        }
+                        else if(!strcmp(esp, "ortopedia")){
+                            b.ortopedia[j] = b.ortopedia[b.nClientesOrtopedia - 1];
+                            b.nClientesOrtopedia--;
+                        }
+                        else if(!strcmp(esp, "oftalmologia")){
+                            b.oftalmologia[j] = b.oftalmologia[b.nClientesOftalmologia - 1];
+                            b.nClientesOftalmologia--;
+                        }
                         kill(pid, SIGINT);
                     }
                 } else printf("\n[BALCÃO] Introduza um número válido");
@@ -346,7 +458,7 @@ void *consolaAdministrador(void *vargp){
                             break;
                         }
                     }
-                    if(flag == 0) printf("\n[BALCÃO] O médico com o PID %d não existe ou está numa consulta", pid);
+                    if(flag == 0 || b.medicos[j].ocupado == 1) printf("\n[BALCÃO] O médico com o PID %d não existe ou está numa consulta", pid);
                     else{
                         printf("\n[BALCÃO] O médico com o PID %d foi removido", pid);
                         b.medicos[j] = b.medicos[b.nMedicosAtivos - 1];
@@ -362,7 +474,7 @@ void *consolaAdministrador(void *vargp){
                 int seconds = atoi(args[1]);
                 if(seconds != 0){
                     printf("\n[BALCÃO] A apresentar a ocupação das filas de %d em %d segundos...", seconds, seconds);
-                    printf("\nEstão %d utentes em lista de espera", b.nClientesEspera); 
+                    printf("\nEstão %d utentes em lista de espera", b.nClientesOftalmologia + b.nClientesOrtopedia + b.nClientesNeurologia + b.nClientesGeral + b.nClientesEstomatologia); 
                     delay = seconds;
                     pthread_cancel(thread_freq);
                     pthread_create(&thread_freq, NULL, TemporizadorAlarme, NULL);
@@ -397,8 +509,16 @@ void *consolaAdministrador(void *vargp){
         kill(b.medicos[i].pid, SIGINT);
     for(int i = 0; i < b.nClientesAtivos; i++)
         kill(b.clientes[i].pid, SIGINT);
-    for(int i = 0; i < b.nClientesEspera; i++)
-        kill(b.clienteEspera[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesGeral; i++)
+        kill(b.geral[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesNeurologia; i++)
+        kill(b.neurologia[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesOftalmologia; i++)
+        kill(b.oftalmologia[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesOrtopedia; i++)
+        kill(b.ortopedia[i].pid, SIGINT);
+    for(int i = 0; i < b.nClientesEstomatologia; i++)
+        kill(b.estomatologia[i].pid, SIGINT);
 
     wait(NULL); // Esperar que o processo filho termine
     close(b.unpipeBC[1]); // Fecha o write do pipe Balcão -> Classificador
@@ -483,20 +603,20 @@ int main(int argc, char *argv[]){
         unlink(BALCAO_FIFO_CLI);
         return 0;
     }
-    if(pthread_create(&thread_id, NULL, updateVivos, NULL)){
-        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread updateVivos!\n");
-        unlink(BALCAO_FIFO);
-        unlink(BALCAO_FIFO_MED);
-        unlink(BALCAO_FIFO_CLI);
-        return 0;
-    }
-    if(pthread_create(&thread_id, NULL, removerMortos, NULL)){
-        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread removerMortos!\n");
-        unlink(BALCAO_FIFO);
-        unlink(BALCAO_FIFO_MED);
-        unlink(BALCAO_FIFO_CLI);
-        return 0;
-    }
+    // if(pthread_create(&thread_id, NULL, updateVivos, NULL)){
+    //     printf("\n[BALCÃO] Ocorreu um erro ao criar a thread updateVivos!\n");
+    //     unlink(BALCAO_FIFO);
+    //     unlink(BALCAO_FIFO_MED);
+    //     unlink(BALCAO_FIFO_CLI);
+    //     return 0;
+    // }
+    // if(pthread_create(&thread_id, NULL, removerMortos, NULL)){
+    //     printf("\n[BALCÃO] Ocorreu um erro ao criar a thread removerMortos!\n");
+    //     unlink(BALCAO_FIFO);
+    //     unlink(BALCAO_FIFO_MED);
+    //     unlink(BALCAO_FIFO_CLI);
+    //     return 0;
+    // }
     if(pthread_create(&thread_id, NULL, consolaAdministrador, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread consolaAdministrador!\n");
         unlink(BALCAO_FIFO);
