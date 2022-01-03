@@ -132,8 +132,8 @@ int main(int argc, char *argv[]){
             printf("[MÉDICO]\nNão foi possível conectar ao balcão:\nLimite de médicos atingido\n");
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", m.nome, m.especialidade);
-            pthread_create(&thread_id, NULL, threadVida, NULL);
-            pthread_join(thread_id, NULL);
+            // pthread_create(&thread_id, NULL, threadVida, NULL);
+            // pthread_join(thread_id, NULL);
         }
         else printf("[MÉDICO]\nOcorreu um problema ao receber uma resposta do balcão\n");
     } else {

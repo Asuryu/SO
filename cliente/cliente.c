@@ -45,6 +45,7 @@ void enviaSinalVida(int signum){
         fecharCliente(0);
     }
     write(fd_balcao, &v, sizeof(vida));
+    printf("Sinal de vida enviado\n");
 }
 
 void *threadVida(void *vargp){
@@ -55,7 +56,7 @@ void *threadVida(void *vargp){
 
     // Enviar sinal de vida a cada 5 segundos
     while (1){
-        sleep(SINAL_VIDA);
+        sleep(5);
         kill(getpid(), SIGALRM);
     }
 }
@@ -132,10 +133,11 @@ int main(int argc, char *argv[]){
             printf("\n[CLIENTE]\nNão foi possível conectar ao balcão:\nLimite de pacientes atingido\n");
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
-            printf("Encontra-se na posição X na fila para a especialidade Y\n");
+            read(fd_recebe, &c, sizeof(cliente));
+            printf("Encontra-se na posição X na fila para a especialidade %s\n", c.analise);
+            // pthread_create(&thread_id, NULL, threadVida, NULL);
+            // pthread_join(thread_id, NULL);
         }
-        pthread_create(&thread_id, NULL, threadVida, NULL);
-        pthread_join(thread_id, NULL);
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");
     }

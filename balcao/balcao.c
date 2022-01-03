@@ -52,6 +52,7 @@ void *updateVivos(void *vargp){
             if(v.pid == 0){
                 break;
             }
+            printf("[BALCAO]\nSinal: %d %s\n", v.pid, v.tipo);
             if(strcmp(v.tipo, "MÉDICO") == 0){
                 for(int i = 0; i < b.nMedicosAtivos; i++){
                     if(b.medicos[i].pid == v.pid){
@@ -78,6 +79,7 @@ void *removerMortos(void *vargp){
         if(b.nMedicosAtivos > 0){
             for(int i = 0; i < b.nMedicosAtivos; i++){
                 if(b.medicos[i].alive == 0){
+                    kill(b.medicos[i].pid, SIGINT);
                     for(int j = i; j < b.nMedicosAtivos - 1; j++){
                         b.medicos[j] = b.medicos[j+1];
                     }
@@ -91,6 +93,7 @@ void *removerMortos(void *vargp){
         if(b.nClientesAtivos > 0){
             for(int i = 0; i < b.nClientesAtivos; i++){
                 if(b.clientes[i].alive == 0){
+                    kill(b.clientes[i].pid, SIGINT);
                     for(int j = i; j < b.nClientesAtivos - 1; j++){
                         b.clientes[j] = b.clientes[j+1];
                     }
@@ -196,13 +199,14 @@ void *aceitarClientes(void *vargp){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", c.pid);
                 }
 
-                strcpy(resposta,"");
-
+                strcpy(resposta, "");
                 strcat(c.sintomas, "\n");
-                write(b.unpipeBC[1], c.sintomas, sizeof(c.sintomas));
-                int tmp = read(b.unpipeCB[0], resposta, MAX);
-                resposta[tmp - 1] = '\0';
-                printf("|| %s ||\n", resposta);
+                write(b.unpipeBC[1], c.sintomas, strlen(c.sintomas));
+                read(b.unpipeCB[0], resposta, MAX);
+                resposta[strlen(resposta)-1] = '\0';
+                strcpy(c.analise, resposta);
+                int sized = write(fd_envio, &c, sizeof(cliente));
+                
                 
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
@@ -372,6 +376,15 @@ void *consolaAdministrador(void *vargp){
             if(i != 1) printf("\n[BALCÃO] O comando 'encerra' não requer argumentos adicionais");
             else{
                 break;
+            }
+        }
+        else if(!strcmp(args[0], "clear")){
+            if(i != 1) printf("\n[BALCÃO] O comando 'clear' não requer argumentos adicionais");
+            else{
+                printf("\033[2J\033[1;1H");
+                printf("     __ __   __          __ __ \n");
+                printf("|\\/||_ |  \\|/   /\\ |    (_ /  \\ \n");
+                printf("|  ||__|__/|\\__/--\\|__  __)\\__/\n\n");
             }
         }
         else printf("\n[BALCÃO] Comando inválido");
