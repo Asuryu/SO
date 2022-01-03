@@ -206,6 +206,7 @@ void *aceitarClientes(void *vargp){
                 resposta[strlen(resposta)-1] = '\0';
                 strcpy(c.analise, resposta);
                 int sized = write(fd_envio, &c, sizeof(cliente));
+                printf("%s", c.analise);
                 
                 
             } else {
