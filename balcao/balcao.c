@@ -208,7 +208,7 @@ void *aceitarClientes(void *vargp){
                 int sized = write(fd_envio, &c, sizeof(cliente));
                 printf("%s", c.analise);
 
-               j=0; ctr=0; newString[MAX]; ctr =0;
+              int j=0; int ctr=0; string newString[MAX];
         for(int i=0;i<=(strlen(c.analise));i++)
         {
             // if space or NULL found, assign NULL into newString[ctr]
