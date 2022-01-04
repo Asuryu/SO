@@ -85,7 +85,6 @@ void *updateVivos(){
             if(v.pid == 0){
                 break;
             }
-            printf("[BALCAO]\nSinal: %d %s\n", v.pid, v.tipo);
             if(strcmp(v.tipo, "MÉDICO") == 0){
                 for(int i = 0; i < b.nMedicosAtivos; i++){
                     if(b.medicos[i].pid == v.pid){
@@ -107,12 +106,10 @@ void *updateVivos(){
 }
 
 void *removerMortos(){
-    printf("thread");
     while(1){
         sleep(SINAL_VIDA);
         for(int i = 0; i < b.nMedicosAtivos; i++){
             if(b.medicos[i].alive == 0){
-                printf("[BALCAO]\nMédico %s com PID %d morto!\n", b.medicos[i].nome, b.medicos[i].pid);
                 for(int j = i; j < b.nMedicosAtivos - 1; j++){
                     b.medicos[j] = b.medicos[j+1];
                 }

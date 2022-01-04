@@ -49,7 +49,6 @@ void enviaSinalVida(){
         printf("[MÉDICO]\nOcorreu um erro ao enviar o sinal de vida!\n");
         fecharMedico();
     }
-    printf("ENVIADO SINAL DE VIDA!\n");
     write(fd_balcao, &v, sizeof(vida));
 }
 
