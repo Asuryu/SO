@@ -32,7 +32,7 @@ char MEDICO_FIFO_FINAL[MAX];
 pthread_t thread_id;
 int fd_recebe, fd_envio;
 
-void fecharMedico(int signum){
+void fecharMedico(){
     printf("\n[MÉDICO]\nO médico foi desconectado\n");
     close(fd_recebe);
     close(fd_envio);
@@ -40,20 +40,20 @@ void fecharMedico(int signum){
     exit(0);
 }
 
-void enviaSinalVida(int signum){
+void enviaSinalVida(){
     vida v;
     v.pid = getpid();
     strcpy(v.tipo, "MÉDICO");
     int fd_balcao = open(BALCAO_FIFO, O_WRONLY | O_NONBLOCK);
     if(fd_balcao == -1){
         printf("[MÉDICO]\nOcorreu um erro ao enviar o sinal de vida!\n");
-        fecharMedico(0);
+        fecharMedico();
     }
     printf("ENVIADO SINAL DE VIDA!\n");
     write(fd_balcao, &v, sizeof(vida));
 }
 
-void *threadVida(void *vargp){
+void *threadVida(){
     struct sigaction sa;
     sa.sa_handler = enviaSinalVida;
     sa.sa_flags = SA_RESTART | SA_SIGINFO;
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
         printf("[MÉDICO]\nO balcão está fora de serviço\n");
         return 0;
     }
-    if(argv[1] == NULL || argv[2] == NULL){
+    if(argv[1] == NULL || argv[2] == NULL || argc != 3){
         printf("[MÉDICO]\nPor favor insira um nome e uma especialidade\nUtilização: ./medico [nome] [espcialidade]\n");
         return 0;
     }

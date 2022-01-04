@@ -25,7 +25,7 @@ typedef struct Consulta {
 char CLIENTE_FIFO_FINAL[MAX];
 int fd_recebe, fd_envio;
 
-void fecharCliente(int signum){
+void fecharCliente(){
     printf("\n[CLIENTE]\nO cliente foi desconectado\n");
     close(fd_recebe);
     close(fd_envio);
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
         printf("\n[CLIENTE]\nO balcão está fora de serviço\n");
         return 0;
     }
-    if(argv[1] == NULL){
+    if(argv[1] == NULL || argc != 2){
         printf("\n[CLIENTE]\nPor favor insira um nome\nUtilização: ./cliente [nome]\n");
         return 0;
     }
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
             read(fd_recebe, &c, sizeof(cliente));
             printf("Encontra-se na posição %d na fila para a especialidade %s\n", c.posicaoFila, c.analise);
-            int size2 = read(fd_recebe, resposta, sizeof(resposta));
+            read(fd_recebe, resposta, sizeof(resposta));
         }
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");

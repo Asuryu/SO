@@ -71,7 +71,7 @@ void mostrarFilas(){
     } else printf("\n\n[BALCÃO] Não há utentes em espera para GERAL\n");
 }
 
-void *updateVivos(void *vargp){
+void *updateVivos(){
     // Ler do pipe MEDICALso e atualizar a lista de vivos
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
     if(fd_balcao == -1){
@@ -103,9 +103,10 @@ void *updateVivos(void *vargp){
             }
         }
     }
+    return NULL;
 }
 
-void *removerMortos(void *vargp){
+void *removerMortos(){
     printf("thread");
     while(1){
         sleep(SINAL_VIDA);
@@ -126,7 +127,7 @@ void *removerMortos(void *vargp){
     }
 }
 
-void *aceitarMedicos(void *vargp){
+void *aceitarMedicos(){
 
     medico m;
 
@@ -180,7 +181,7 @@ void *aceitarMedicos(void *vargp){
     } while (1);
 }
 
-void *aceitarClientes(void *vargp){
+void *aceitarClientes(){
 
     cliente c;
     char resposta[MAX];
@@ -224,7 +225,6 @@ void *aceitarClientes(void *vargp){
                 strcpy(c.analise, resposta);
                 
                 char especialidade[MAX];
-                int prioridade;
                 strcpy(especialidade, "");
                 strcat(especialidade, c.analise);
                 especialidade[strlen(especialidade)-2] = '\0';
@@ -266,7 +266,7 @@ void *aceitarClientes(void *vargp){
                     c.posicaoFila = b.nClientesGeral;
                 }
 
-                int sized = write(fd_envio, &c, sizeof(cliente));
+                write(fd_envio, &c, sizeof(cliente));
 
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
@@ -285,7 +285,7 @@ void *aceitarClientes(void *vargp){
     } while (1);
 }
 
-void *TemporizadorAlarme(void *vargp){
+void *TemporizadorAlarme(){
 
     while(1){
         mostrarFilas();
@@ -294,7 +294,7 @@ void *TemporizadorAlarme(void *vargp){
     
 };
 
-void *consolaAdministrador(void *vargp){
+void *consolaAdministrador(){
 
     char sintomas[MAX];
     char sintomasFinais[MAX];
@@ -511,7 +511,7 @@ void *consolaAdministrador(void *vargp){
     return NULL;
 }
 
-int main(int argc, char *argv[]){
+int main(){
 
     printf("\033[2J\033[1;1H");
     printf("     __ __   __          __ __ \n");
