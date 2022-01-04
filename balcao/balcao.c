@@ -106,40 +106,24 @@ void *updateVivos(void *vargp){
 }
 
 void *removerMortos(void *vargp){
-    // Remover mortos da lista de vivos
+    printf("thread");
     while(1){
         sleep(SINAL_VIDA);
-        if(b.nMedicosAtivos > 0){
-            for(int i = 0; i < b.nMedicosAtivos; i++){
-                if(b.medicos[i].alive == 0){
-                    kill(b.medicos[i].pid, SIGINT);
-                    for(int j = i; j < b.nMedicosAtivos - 1; j++){
-                        b.medicos[j] = b.medicos[j+1];
-                    }
-                    b.nMedicosAtivos--;
+        for(int i = 0; i < b.nMedicosAtivos; i++){
+            if(b.medicos[i].alive == 0){
+                printf("[BALCAO]\nMédico %s com PID %d morto!\n", b.medicos[i].nome, b.medicos[i].pid);
+                for(int j = i; j < b.nMedicosAtivos - 1; j++){
+                    b.medicos[j] = b.medicos[j+1];
                 }
-                for(int i = 0; i < b.nMedicosAtivos; i++){
-                    b.medicos[i].alive = 0;
-                }
+                b.nMedicosAtivos--;
+                i--;
             }
         }
-        if(b.nClientesAtivos > 0){
-            for(int i = 0; i < b.nClientesAtivos; i++){
-                if(b.clientes[i].alive == 0){
-                    kill(b.clientes[i].pid, SIGINT);
-                    for(int j = i; j < b.nClientesAtivos - 1; j++){
-                        b.clientes[j] = b.clientes[j+1];
-                    }
-                    b.nClientesAtivos--;
-                }
-                for(int i = 0; i < b.nClientesAtivos; i++){
-                    b.clientes[i].alive = 0;
-                }
-            }
+        // Colocar todos os médicos alive a 0
+        for(int i = 0; i < b.nMedicosAtivos; i++){
+            b.medicos[i].alive = 0;
         }
     }
-    
-
 }
 
 void *aceitarMedicos(void *vargp){
@@ -603,20 +587,20 @@ int main(int argc, char *argv[]){
         unlink(BALCAO_FIFO_CLI);
         return 0;
     }
-    // if(pthread_create(&thread_id, NULL, updateVivos, NULL)){
-    //     printf("\n[BALCÃO] Ocorreu um erro ao criar a thread updateVivos!\n");
-    //     unlink(BALCAO_FIFO);
-    //     unlink(BALCAO_FIFO_MED);
-    //     unlink(BALCAO_FIFO_CLI);
-    //     return 0;
-    // }
-    // if(pthread_create(&thread_id, NULL, removerMortos, NULL)){
-    //     printf("\n[BALCÃO] Ocorreu um erro ao criar a thread removerMortos!\n");
-    //     unlink(BALCAO_FIFO);
-    //     unlink(BALCAO_FIFO_MED);
-    //     unlink(BALCAO_FIFO_CLI);
-    //     return 0;
-    // }
+    if(pthread_create(&thread_id, NULL, updateVivos, NULL)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread updateVivos!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
+    if(pthread_create(&thread_id, NULL, removerMortos, NULL)){
+        printf("\n[BALCÃO] Ocorreu um erro ao criar a thread removerMortos!\n");
+        unlink(BALCAO_FIFO);
+        unlink(BALCAO_FIFO_MED);
+        unlink(BALCAO_FIFO_CLI);
+        return 0;
+    }
     if(pthread_create(&thread_id, NULL, consolaAdministrador, NULL)){
         printf("\n[BALCÃO] Ocorreu um erro ao criar a thread consolaAdministrador!\n");
         unlink(BALCAO_FIFO);

@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <pthread.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -18,13 +17,12 @@
 #define BALCAO_FIFO_CLI "../MEDICALsoCLI"
 #define CLIENTE_FIFO "../CLIENTE[%d]"
 
-typedef struct Vida {
-    int pid;
-    char tipo[MAX];
-} vida, *vida_ptr;
+typedef struct Consulta {
+    char pipeMedico[MAX];
+    char pipeCliente[MAX];
+} consulta, *consulta_ptr;
 
 char CLIENTE_FIFO_FINAL[MAX];
-pthread_t thread_id;
 int fd_recebe, fd_envio;
 
 void fecharCliente(int signum){
@@ -33,32 +31,6 @@ void fecharCliente(int signum){
     close(fd_envio);
     unlink(CLIENTE_FIFO_FINAL);
     exit(0);
-}
-
-void enviaSinalVida(int signum){
-    vida v;
-    v.pid = getpid();
-    strcpy(v.tipo, "CLIENTE");
-    int fd_balcao = open(BALCAO_FIFO, O_WRONLY | O_NONBLOCK);
-    if(fd_balcao == -1){
-        printf("[CLIENTE]\nOcorreu um erro ao enviar o sinal de vida!\n");
-        fecharCliente(0);
-    }
-    write(fd_balcao, &v, sizeof(vida));
-    printf("Sinal de vida enviado\n");
-}
-
-void *threadVida(void *vargp){
-    struct sigaction sa;
-    sa.sa_handler = enviaSinalVida;
-    sa.sa_flags = SA_RESTART | SA_SIGINFO;
-    sigaction(SIGALRM, &sa, NULL);
-
-    // Enviar sinal de vida a cada 5 segundos
-    while (1){
-        sleep(20);
-        kill(getpid(), SIGALRM);
-    }
 }
 
 int balcaoAberto(){
@@ -135,8 +107,7 @@ int main(int argc, char *argv[]){
             printf("\n[CLIENTE]\nBem vindo ao MEDICALso, %s\n", c.nome);
             read(fd_recebe, &c, sizeof(cliente));
             printf("Encontra-se na posição %d na fila para a especialidade %s\n", c.posicaoFila, c.analise);
-            // pthread_create(&thread_id, NULL, threadVida, NULL);
-            // pthread_join(thread_id, NULL);
+            int size2 = read(fd_recebe, resposta, sizeof(resposta));
         }
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");

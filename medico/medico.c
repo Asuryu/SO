@@ -23,6 +23,11 @@ typedef struct Vida {
     char tipo[MAX];
 } vida, *vida_ptr;
 
+typedef struct Consulta {
+    char pipeMedico[MAX];
+    char pipeCliente[MAX];
+} consulta, *consulta_ptr;
+
 char MEDICO_FIFO_FINAL[MAX];
 pthread_t thread_id;
 int fd_recebe, fd_envio;
@@ -44,6 +49,7 @@ void enviaSinalVida(int signum){
         printf("[MÉDICO]\nOcorreu um erro ao enviar o sinal de vida!\n");
         fecharMedico(0);
     }
+    printf("ENVIADO SINAL DE VIDA!\n");
     write(fd_balcao, &v, sizeof(vida));
 }
 
@@ -132,8 +138,8 @@ int main(int argc, char *argv[]){
             printf("[MÉDICO]\nNão foi possível conectar ao balcão:\nLimite de médicos atingido\n");
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", m.nome, m.especialidade);
-            // pthread_create(&thread_id, NULL, threadVida, NULL);
-            // pthread_join(thread_id, NULL);
+            pthread_create(&thread_id, NULL, threadVida, NULL);
+            pthread_join(thread_id, NULL);
         }
         else printf("[MÉDICO]\nOcorreu um problema ao receber uma resposta do balcão\n");
     } else {

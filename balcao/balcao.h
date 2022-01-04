@@ -27,4 +27,9 @@ typedef struct Vida {
     char tipo[MAX];
 } vida, *vida_ptr;
 
+typedef struct Consulta {
+    char pipeMedico[MAX];
+    char pipeCliente[MAX];
+} consulta, *consulta_ptr;
+
 #endif //BALCAO
