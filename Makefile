@@ -7,13 +7,13 @@ CFLAGS = -Wall -Werror -Wextra
 
 all:
 	@$(C) ./$(BALCAO)/$(BALCAO).c -o ./$(BALCAO)/$(BALCAO) $(CFLAGS) -lpthread
-	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS)
-	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS)
+	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS) 
+	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS) -lpthread
 balcao:
 	@$(C) ./$(BALCAO)/$(BALCAO).c -o ./$(BALCAO)/$(BALCAO) $(CFLAGS) -lpthread
 cliente:
 	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS)
 medico:
-	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS)
+	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS) -lpthread
 clean:
 	@rm ./$(BALCAO)/$(BALCAO) ./$(CLIENTE)/$(CLIENTE) ./$(MEDICO)/$(MEDICO)
