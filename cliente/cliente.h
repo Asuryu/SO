@@ -17,6 +17,7 @@ typedef struct Cliente {
     int prioridade;
     int posicaoFila;
     int alive;
+    char pipeCliente[MAX];
 } cliente, *cliente_ptr;
 
 #endif //CLIENTE

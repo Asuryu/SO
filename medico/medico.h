@@ -15,6 +15,7 @@ typedef struct Medico {
     char especialidade[MAX];
     int alive;
     int ocupado;
+    char pipeMedico[MAX];
 } medico, *medico_ptr;
 
 #endif //MEDICO

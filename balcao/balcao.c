@@ -158,6 +158,27 @@ void *aceitarMedicos(){
                 if(size2 == -1){
                     printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao médico com PID %d\n", m.pid);
                 }
+
+                if(strcmp(m.especialidade, "oftalmologia") == 0){
+                    if(b.nClientesOftalmologia > 0){
+                        int size2 = write(fd_envio, &b.oftalmologia[0], sizeof(cliente));
+                        printf("%s", b.oftalmologia[0].pipeCliente);
+                        b.medicos[b.nMedicosAtivos].ocupado = 1;
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.oftalmologia[0].pid);
+                        }
+                    }
+
+                } else if(strcmp(m.especialidade, "neurologia") == 0){
+                    // if(b.nClientesNeurologia > 0){
+                } else if(strcmp(m.especialidade, "estomatologia") == 0){
+                    // if(b.nClientesNeurologia > 0){
+                } else if(strcmp(m.especialidade, "ortopedia") == 0){
+                    // if(b.nClientesNeurologia > 0){
+                } else if(strcmp(m.especialidade, "geral") == 0){
+                    // if(b.nClientesNeurologia > 0){
+                }
+
             } else {
                 // Médico não aceite
                 printf("\n[PID %d] Médico: %s (%s) --> Não aceite\n", m.pid, m.nome, m.especialidade);
@@ -216,8 +237,14 @@ void *aceitarClientes(){
 
                 strcpy(resposta, "");
                 strcat(c.sintomas, "\n");
-                write(b.unpipeBC[1], c.sintomas, strlen(c.sintomas));
-                read(b.unpipeCB[0], resposta, MAX);
+                int size_w = write(b.unpipeBC[1], c.sintomas, strlen(c.sintomas));
+                if(size_w == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de sintomas ao balcão\n");
+                }
+                int size3 = read(b.unpipeCB[0], resposta, MAX);
+                if(size3 == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao ler o pipe do cliente com PID %d\n", c.pid);
+                }
                 resposta[strlen(resposta)-1] = '\0';
                 strcpy(c.analise, resposta);
                 
@@ -263,7 +290,10 @@ void *aceitarClientes(){
                     c.posicaoFila = b.nClientesGeral;
                 }
 
-                write(fd_envio, &c, sizeof(cliente));
+                size_w = write(fd_envio, &c, sizeof(cliente));
+                if(size_w == -1){
+                    printf("\n[BALCÃO] Ocorreu um erro ao enviar análise ao cliente\n");
+                }
 
             } else {
                 printf("\n[PID %d] Cliente: %s (%s) --> Não aceite\n", c.pid, c.nome, c.sintomas);
@@ -483,7 +513,8 @@ void *consolaAdministrador(){
         else printf("\n[BALCÃO] Comando inválido");
         free(args);
     }
-    write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
+    int size_w = write(b.unpipeBC[1], "#fim\n", strlen("#fim\n"));
+    if(size_w < 0) printf("\n[BALCÃO] Erro ao enviar mensagem para o classificador");
     printf("\n[BALCÃO] A encerrar o balcão...\n");
 
     for(int i = 0; i < b.nMedicosAtivos; i++)
