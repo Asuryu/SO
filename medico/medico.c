@@ -158,6 +158,7 @@ int main(int argc, char *argv[]){
         else if(!strcmp("SUCCESS 200 - ACEITE", resposta)){
             printf("[MÉDICO]\nBem vindo ao MEDICALso, Dr. %s\nA sua especialidade é %s\n", m.nome, m.especialidade);
             size = read(fd_recebe, &c, sizeof(cliente));
+            close(fd_recebe);
             if(size == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao receber o cliente!\n");
                 close(fd_envio);
@@ -169,6 +170,7 @@ int main(int argc, char *argv[]){
             fflush(stdout);
             printf("[MÉDICO]\nA atender o/a utente %s\nSintomas: %s\n\n---- INÍCIO DA CONVERSA ----\n", c.nome, c.sintomas);
             
+            printf("||%s||", c.pipeCliente);
             int pipeCliente = open(c.pipeCliente, O_WRONLY);
             if(pipeCliente == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
@@ -188,6 +190,10 @@ int main(int argc, char *argv[]){
             }
             close(pipeCliente);
             char resposta[MAX];
+            printf("\nIntroduza uma mensagem: ");
+                    fflush(stdout);
+                    fflush(stdin);
+                    scanf("%[^\n]", resposta);
             int fd_cliente_r = open(MEDICO_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
             if(fd_cliente_r == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
@@ -198,7 +204,7 @@ int main(int argc, char *argv[]){
                 return 1;
             }
             do{
-                tv.tv_sec = 5;
+                tv.tv_sec = 100;
                 tv.tv_usec = 0;
                 FD_ZERO(&read_fds);
                 FD_SET(0, &read_fds);
@@ -213,36 +219,19 @@ int main(int argc, char *argv[]){
                     unlink(MEDICO_FIFO_FINAL);
                     return 1;
                 }
-                
+                if(FD_ISSET(0, &read_fds)){
+                    strcpy(resposta, "");
+                    printf("\nIntroduza uma mensagem: ");
+                    fflush(stdout);
+                    fflush(stdin);
+                    scanf("%[^\n]", resposta);
+                    int fd_client_w = open(c.pipeCliente, O_WRONLY);
+                    write(fd_client_w, resposta, sizeof(resposta));
+                    close(fd_client_w);
+                }
                 if(FD_ISSET(fd_cliente_r, &read_fds)){
                     if(size > 0){
-                        printf("||%s||\n", resposta);
-                        strcpy(resposta, "");
-                        printf("\nIntroduza uma mensagem: ");
-                        fflush(stdout);
-                        fflush(stdin);
-                        scanf("%[^\n]", resposta);
-                        int fd_cliente_w = open(c.pipeCliente, O_WRONLY);
-                        if(fd_cliente_w == -1){
-                            printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
-                            close(fd_envio);
-                            close(fd_recebe);
-                            close(fd_cliente_r);
-                            close(fd_cliente_w);
-                            unlink(MEDICO_FIFO_FINAL);
-                            return 1;
-                        }
-                        int size2 = write(fd_cliente_w, resposta, MAX);
-                        if(size2 == -1){
-                            printf("[MÉDICO]\nOcorreu um erro ao enviar a mensagem ao utente!\n");
-                            close(fd_envio);
-                            close(fd_recebe);
-                            close(fd_cliente_r);
-                            close(fd_cliente_w);
-                            unlink(MEDICO_FIFO_FINAL);
-                            return 1;
-                        }
-                        close(fd_cliente_w);
+                        printf("\n>> %s\n", resposta);
                     }
                 }
             } while(strcmp(resposta, "adeus"));

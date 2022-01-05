@@ -162,7 +162,6 @@ void *aceitarMedicos(){
                 if(strcmp(m.especialidade, "oftalmologia") == 0){
                     if(b.nClientesOftalmologia > 0){
                         int size2 = write(fd_envio, &b.oftalmologia[0], sizeof(cliente));
-                        printf("%s", b.oftalmologia[0].pipeCliente);
                         b.medicos[b.nMedicosAtivos].ocupado = 1;
                         if(size2 == -1){
                             printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.oftalmologia[0].pid);
