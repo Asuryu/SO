@@ -155,8 +155,11 @@ int main(int argc, char *argv[]){
                 //     unlink(CLIENTE_FIFO_FINAL);
                 //     return 1;
                 // }
-                printf("%d\n", size_m);
                 close(fd_medico_w);
+                if(!strcmp(resposta, "adeus")){
+                    printf("\n---- FIM DA CONVERSA ----\n");
+                    break;
+                }
                 int fd_medico_r = open(CLIENTE_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
                 if(fd_medico_r == -1){
                     printf("\n[CLIENTE]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
@@ -168,9 +171,16 @@ int main(int argc, char *argv[]){
                 int size2 = read(fd_medico_r, resposta, MAX);
                 if(size2 > 0){
                     close(fd_medico_r);
-                    printf("\n[CLIENTE]\n%s\n", resposta);
+                    printf("\n%s: %s\n", m.nome, resposta);
+                    if(!strcmp(resposta, "adeus")){
+                        printf("\n[CLIENTE]\nObrigado por utilizar o MEDICALso\n");
+                        close(fd_envio);
+                        close(fd_recebe);
+                        unlink(CLIENTE_FIFO_FINAL);
+                        return 0;
+                    }
                 }
-            }while(strcmp(resposta, "adeus"));
+            }while(1);
         }
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");

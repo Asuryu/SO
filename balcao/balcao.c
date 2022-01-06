@@ -161,7 +161,17 @@ void *aceitarMedicos(){
 
                 if(strcmp(m.especialidade, "oftalmologia") == 0){
                     if(b.nClientesOftalmologia > 0){
-                        int size2 = write(fd_envio, &b.oftalmologia[0], sizeof(cliente));
+                        cliente aux = b.oftalmologia[0];
+                        int size2 = write(fd_envio, &aux, sizeof(cliente));
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
+                        }
+                        fflush(stdout);
+                        // Remove o cliente da lista de espera
+                        b.nClientesOftalmologia--;
+                        for(int i = 0; i < b.nClientesOftalmologia; i++){
+                            b.oftalmologia[i] = b.oftalmologia[i+1];
+                        }
                         b.medicos[b.nMedicosAtivos].ocupado = 1;
                         if(size2 == -1){
                             printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.oftalmologia[0].pid);
@@ -223,6 +233,7 @@ void *aceitarClientes(){
                 b.clientes[b.nClientesAtivos] = c;
                 b.nClientesAtivos++;
                 printf("\n[PID %d] Cliente: %s (%s)\n", c.pid, c.nome, c.sintomas);
+                fflush(stdout);
                 
                 sprintf(FIFO_FINAL, CLIENTE_FIFO, c.pid); // Guarda no "FIFO_FINAL" o nome do pipe para onde queremos enviar as cenas
                 int fd_envio = open(FIFO_FINAL, O_WRONLY);
@@ -361,7 +372,7 @@ void *consolaAdministrador(){
                 printf("\n[BALCÃO] A listar todos os utentes (%d):\n", b.nClientesAtivos);
                 for(int i=0; i < b.nClientesAtivos; i++)
                 {
-                    printf("Utente [%d] %s com o sintoma %s está em consulta\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
+                    printf("Utente [%d] %s com o sintoma %s\n", b.clientes[i].pid, b.clientes[i].nome, b.clientes[i].sintomas);
                 }
                 mostrarFilas();
             }

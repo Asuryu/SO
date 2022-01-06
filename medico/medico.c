@@ -169,8 +169,6 @@ int main(int argc, char *argv[]){
             menu();
             fflush(stdout);
             printf("[MÉDICO]\nA atender o/a utente %s\nSintomas: %s\n\n---- INÍCIO DA CONVERSA ----\n", c.nome, c.sintomas);
-            
-            printf("||%s||", c.pipeCliente);
             int pipeCliente = open(c.pipeCliente, O_WRONLY);
             if(pipeCliente == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
@@ -231,10 +229,15 @@ int main(int argc, char *argv[]){
                 }
                 if(FD_ISSET(fd_cliente_r, &read_fds)){
                     if(size > 0){
-                        printf("\n>> %s\n", resposta);
+                        printf("\n%s: %s\n", c.nome, resposta);
+                        if(!strcmp(resposta, "adeus")){
+                            printf("\n---- FIM DA CONVERSA ----\n");
+                            close(fd_cliente_r);
+                            break;
+                        }
                     }
                 }
-            } while(strcmp(resposta, "adeus"));
+            } while(1);
 
             close(fd_cliente_r);
 
