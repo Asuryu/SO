@@ -147,14 +147,14 @@ int main(int argc, char *argv[]){
                     return 1;
                 }
                 int size_m = write(fd_medico_w, resposta, MAX);
-                // if(size_m == -1){
-                //     printf("\n[CLIENTE]\nOcorreu um erro ao enviar a mensagem\n");
-                //     close(fd_medico_w);
-                //     close(fd_recebe);
-                //     close(fd_envio);
-                //     unlink(CLIENTE_FIFO_FINAL);
-                //     return 1;
-                // }
+                if(size_m == -1){
+                    printf("\n[CLIENTE]\nOcorreu um erro ao enviar a mensagem\n");
+                    close(fd_medico_w);
+                    close(fd_recebe);
+                    close(fd_envio);
+                    unlink(CLIENTE_FIFO_FINAL);
+                    return 1;
+                }
                 close(fd_medico_w);
                 if(!strcmp(resposta, "adeus")){
                     printf("\n---- FIM DA CONVERSA ----\n");
