@@ -166,6 +166,7 @@ void *aceitarMedicos(){
                         if(size2 == -1){
                             printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
                         }
+                        printf("\n[PID %d] Cliente: %s (%s)\n", aux.pid, aux.nome, aux.analise);
                         fflush(stdout);
                         // Remove o cliente da lista de espera
                         b.nClientesOftalmologia--;

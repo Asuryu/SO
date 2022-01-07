@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <pthread.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,6 +34,7 @@ typedef struct Consulta {
 char CLIENTE_FIFO_FINAL[MAX];
 char MEDICO_FIFO_FINAL[MAX];
 int fd_recebe, fd_envio, fd_medico_w, fd_medico_r;
+pthread_t thread_id;
 
 void fecharCliente(){
     printf("\n[CLIENTE]\nO cliente foi desconectado\n");
@@ -40,6 +42,63 @@ void fecharCliente(){
     close(fd_envio);
     unlink(CLIENTE_FIFO_FINAL);
     exit(0);
+}
+
+void *readMensagem(void *vargp){
+    char buffer[MAX];
+    int size;
+    medico_ptr m = (medico_ptr) vargp;
+    int fd_recebe = open(CLIENTE_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
+    if(fd_recebe == -1){
+        printf("[CLIENTE]\nOcorreu um erro ao abrir o pipe de receção!\n");
+        fecharCliente();
+    }
+    while(1){
+        size = read(fd_recebe, buffer, MAX);
+        if(size < 0){
+            if(errno == EAGAIN){
+                continue;
+            }
+            else{
+                printf("[CLIENTE]\nOcorreu um erro ao ler a mensagem!\n");
+                fecharCliente();
+            }
+        }
+        else{
+            printf("%s: %s\n", m->nome, buffer);
+            if(strcmp(buffer, "adeus\n") == 0){
+                fecharCliente();
+            }
+            fflush(stdout);
+        }
+    }
+}
+
+void *writeMensagem(void *vargp){
+    char buffer[MAX];
+    int size;
+    medico_ptr m = (medico_ptr) vargp;
+    int fd_envio = open(m->pipeMedico, O_WRONLY);
+    if(fd_envio == -1){
+        printf("[CLIENTE]\nOcorreu um erro ao abrir o pipe de envio!\n");
+        fecharCliente();
+    }
+    while(1){
+        printf("\nIntroduza uma mensagem: ");
+        fflush(stdout);
+        fflush(stdin);
+        fgets(buffer, MAX, stdin);
+        size = write(fd_envio, buffer, strlen(buffer));
+        if(size == -1){
+            if(errno == EAGAIN){
+                continue;
+            }
+            else{
+                printf("[CLIENTE]\nOcorreu um erro ao escrever a mensagem!\n");
+                fecharCliente();
+            }
+        }
+    }
 }
 
 int balcaoAberto(){
@@ -92,6 +151,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
     int size_s = write(fd_envio, &c, sizeof(cliente));
+    printf("%d", size_s);
     if(size_s == -1){
         printf("\n[CLIENTE]\nOcorreu um erro ao autenticar-se\n");
         close(fd_envio);
@@ -132,55 +192,9 @@ int main(int argc, char *argv[]){
             }
             menu();
             printf("\n[CLIENTE]\nA ser atendido pelo/a especialista %s\nEspecialidade: %s\n\n---- INÍCIO DA CONVERSA ----\n", m.nome, m.especialidade);
-            do{
-                strcpy(resposta, "");
-                printf("Introduza uma mensagem: ");
-                fflush(stdout);
-                fflush(stdin);
-                scanf("%[^\n]", resposta);
-                int fd_medico_w = open(m.pipeMedico, O_WRONLY);
-                if(fd_medico_w == -1){
-                    printf("\n[CLIENTE]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
-                    close(fd_envio);
-                    close(fd_recebe);
-                    unlink(CLIENTE_FIFO_FINAL);
-                    return 1;
-                }
-                int size_m = write(fd_medico_w, resposta, MAX);
-                if(size_m == -1){
-                    printf("\n[CLIENTE]\nOcorreu um erro ao enviar a mensagem\n");
-                    close(fd_medico_w);
-                    close(fd_recebe);
-                    close(fd_envio);
-                    unlink(CLIENTE_FIFO_FINAL);
-                    return 1;
-                }
-                close(fd_medico_w);
-                if(!strcmp(resposta, "adeus")){
-                    printf("\n---- FIM DA CONVERSA ----\n");
-                    break;
-                }
-                int fd_medico_r = open(CLIENTE_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
-                if(fd_medico_r == -1){
-                    printf("\n[CLIENTE]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
-                    close(fd_envio);
-                    close(fd_recebe);
-                    unlink(CLIENTE_FIFO_FINAL);
-                    return 1;
-                }
-                int size2 = read(fd_medico_r, resposta, MAX);
-                if(size2 > 0){
-                    close(fd_medico_r);
-                    printf("\n%s: %s\n", m.nome, resposta);
-                    if(!strcmp(resposta, "adeus")){
-                        printf("\n[CLIENTE]\nObrigado por utilizar o MEDICALso\n");
-                        close(fd_envio);
-                        close(fd_recebe);
-                        unlink(CLIENTE_FIFO_FINAL);
-                        return 0;
-                    }
-                }
-            }while(1);
+            pthread_create(&thread_id, NULL, readMensagem, &m);
+            pthread_create(&thread_id, NULL, writeMensagem, &m);
+            pthread_join(thread_id, NULL);
         }
     } else {
         printf("\n[CLIENTE]\nOcorreu um problema ao receber uma resposta do balcão\n");

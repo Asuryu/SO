@@ -81,6 +81,63 @@ void *threadVida(){
     }
 }
 
+void *readMensagem(void *vargp){
+    char buffer[MAX];
+    int size;
+    cliente_ptr c = (cliente_ptr) vargp;
+    int fd_recebe = open(MEDICO_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
+    if(fd_recebe == -1){
+        printf("[MÉDICO]\nOcorreu um erro ao abrir o pipe de receção!\n");
+        fecharMedico();
+    }
+    while(1){
+        size = read(fd_recebe, buffer, MAX);
+        if(size < 0){
+            if(errno == EAGAIN){
+                continue;
+            }
+            else{
+                printf("[MÉDICO]\nOcorreu um erro ao ler a mensagem!\n");
+                fecharMedico();
+            }
+        }
+        else{
+            printf("%s: %s\n", c->nome, buffer);
+            if(strcmp(buffer, "adeus\n") == 0){
+                fecharMedico();
+            }
+            fflush(stdout);
+        }
+    }
+}
+
+void *writeMensagem(void *vargp){
+    char buffer[MAX];
+    int size;
+    cliente_ptr c = (cliente_ptr) vargp;
+    int fd_envio = open(c->pipeCliente, O_WRONLY);
+    if(fd_envio == -1){
+        printf("[MÉDICO]\nOcorreu um erro ao abrir o pipe de envio!\n");
+        fecharMedico();
+    }
+    while(1){
+        printf("\nIntroduza uma mensagem: ");
+        fflush(stdout);
+        fflush(stdin);
+        fgets(buffer, MAX, stdin);
+        size = write(fd_envio, buffer, strlen(buffer));
+        if(size == -1){
+            if(errno == EAGAIN){
+                continue;
+            }
+            else{
+                printf("[MÉDICO]\nOcorreu um erro ao escrever a mensagem!\n");
+                fecharMedico();
+            }
+        }
+    }
+}
+
 int balcaoAberto(){
     int fd_balcao = open(BALCAO_FIFO, O_RDONLY | O_NONBLOCK);
     close(fd_balcao);
@@ -169,6 +226,8 @@ int main(int argc, char *argv[]){
             menu();
             fflush(stdout);
             printf("[MÉDICO]\nA atender o/a utente %s\nSintomas: %s\n\n---- INÍCIO DA CONVERSA ----\n", c.nome, c.sintomas);
+            printf("%s", c.pipeCliente);
+            fflush(stdout);
             int pipeCliente = open(c.pipeCliente, O_WRONLY);
             if(pipeCliente == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação WRITE!\n");
@@ -187,11 +246,6 @@ int main(int argc, char *argv[]){
                 return 1;
             }
             close(pipeCliente);
-            char resposta[MAX];
-            printf("\nIntroduza uma mensagem: ");
-                    fflush(stdout);
-                    fflush(stdin);
-                    scanf("%[^\n]", resposta);
             int fd_cliente_r = open(MEDICO_FIFO_FINAL, O_RDONLY | O_NONBLOCK);
             if(fd_cliente_r == -1){
                 printf("[MÉDICO]\nOcorreu um erro ao abrir o túnel de comunicação READ!\n");
@@ -201,43 +255,8 @@ int main(int argc, char *argv[]){
                 unlink(MEDICO_FIFO_FINAL);
                 return 1;
             }
-            do{
-                tv.tv_sec = 100;
-                tv.tv_usec = 0;
-                FD_ZERO(&read_fds);
-                FD_SET(0, &read_fds);
-                FD_SET(fd_cliente_r, &read_fds);
-                select(fd_cliente_r + 1, &read_fds, NULL, NULL, &tv);
-                int size = read(fd_cliente_r, resposta, MAX);
-                if(size == -1){
-                    printf("[MÉDICO]\nOcorreu um erro ao receber a resposta do utente!\n");
-                    close(fd_envio);
-                    close(fd_recebe);
-                    close(fd_cliente_r);
-                    unlink(MEDICO_FIFO_FINAL);
-                    return 1;
-                }
-                if(FD_ISSET(0, &read_fds)){
-                    strcpy(resposta, "");
-                    printf("\nIntroduza uma mensagem: ");
-                    fflush(stdout);
-                    fflush(stdin);
-                    scanf("%[^\n]", resposta);
-                    int fd_client_w = open(c.pipeCliente, O_WRONLY);
-                    write(fd_client_w, resposta, sizeof(resposta));
-                    close(fd_client_w);
-                }
-                if(FD_ISSET(fd_cliente_r, &read_fds)){
-                    if(size > 0){
-                        printf("\n%s: %s\n", c.nome, resposta);
-                        if(!strcmp(resposta, "adeus")){
-                            printf("\n---- FIM DA CONVERSA ----\n");
-                            close(fd_cliente_r);
-                            break;
-                        }
-                    }
-                }
-            } while(1);
+            pthread_create(&thread_id, NULL, readMensagem, &c);
+            pthread_create(&thread_id, NULL, writeMensagem, &c);
 
             close(fd_cliente_r);
 
