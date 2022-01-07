@@ -88,7 +88,7 @@ void *writeMensagem(void *vargp){
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);
-        gets(buffer);
+        fgets(buffer, sizeof(buffer), stdin);
         size = write(fd_envio, buffer, strlen(buffer));
         if(size == -1){
             if(errno == EAGAIN){
