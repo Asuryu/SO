@@ -121,6 +121,7 @@ void *writeMensagem(void *vargp){
         fecharMedico();
     }
     while(1){
+        strcpy(buffer, "");
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);

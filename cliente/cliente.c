@@ -84,6 +84,7 @@ void *writeMensagem(void *vargp){
         fecharCliente();
     }
     while(1){
+        strcpy(buffer, "");
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);
