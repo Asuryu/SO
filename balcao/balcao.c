@@ -353,22 +353,62 @@ void *aceitarClientes(){
                 else if(!strcmp(especialidade, "neurologia")){
                     b.neurologia[b.nClientesNeurologia] = c;
                     b.nClientesNeurologia++;
-                    c.posicaoFila = b.nClientesNeurologia;
+                    // Ordenar todos os utentes por prioridade
+                    for(int i = 0; i < b.nClientesNeurologia-1; i++){
+                        for(int j = i+1; j < b.nClientesNeurologia; j++){
+                            if(b.neurologia[i].prioridade > b.neurologia[j].prioridade){
+                                cliente aux = b.neurologia[i];
+                                b.neurologia[i] = b.neurologia[j];
+                                b.neurologia[j] = aux;
+                                c.posicaoFila = b.neurologia[i].posicaoFila = j;
+                            }
+                        }
+                    }
                 }
                 else if(!strcmp(especialidade, "estomatologia")){
                     b.estomatologia[b.nClientesEstomatologia] = c;
                     b.nClientesEstomatologia++;
-                    c.posicaoFila = b.nClientesEstomatologia;
+                    // Ordenar todos os utentes por prioridade
+                    for(int i = 0; i < b.nClientesEstomatologia-1; i++){
+                        for(int j = i+1; j < b.nClientesEstomatologia; j++){
+                            if(b.estomatologia[i].prioridade > b.estomatologia[j].prioridade){
+                                cliente aux = b.estomatologia[i];
+                                b.estomatologia[i] = b.estomatologia[j];
+                                b.estomatologia[j] = aux;
+                                c.posicaoFila = b.estomatologia[i].posicaoFila = j;
+                            }
+                        }
+                    }
                 }
                 else if(!strcmp(especialidade, "ortopedia")){
                     b.ortopedia[b.nClientesOrtopedia] = c;
                     b.nClientesOrtopedia++;
-                    c.posicaoFila = b.nClientesOrtopedia;
+                    // Ordenar todos os utentes por prioridade
+                    for(int i = 0; i < b.nClientesOrtopedia-1; i++){
+                        for(int j = i+1; j < b.nClientesOrtopedia; j++){
+                            if(b.ortopedia[i].prioridade > b.ortopedia[j].prioridade){
+                                cliente aux = b.ortopedia[i];
+                                b.ortopedia[i] = b.ortopedia[j];
+                                b.ortopedia[j] = aux;
+                                c.posicaoFila = b.ortopedia[i].posicaoFila = j;
+                            }
+                        }
+                    }
                 }
                 else{
                     b.geral[b.nClientesGeral] = c;
                     b.nClientesGeral++;
-                    c.posicaoFila = b.nClientesGeral;
+                    // Ordenar todos os utentes por prioridade
+                    for(int i = 0; i < b.nClientesGeral-1; i++){
+                        for(int j = i+1; j < b.nClientesGeral; j++){
+                            if(b.geral[i].prioridade > b.geral[j].prioridade){
+                                cliente aux = b.geral[i];
+                                b.geral[i] = b.geral[j];
+                                b.geral[j] = aux;
+                                c.posicaoFila = b.geral[i].posicaoFila = j;
+                            }
+                        }
+                    }
                 }
 
                 size_w = write(fd_envio, &c, sizeof(cliente));
