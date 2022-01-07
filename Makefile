@@ -7,7 +7,7 @@ CFLAGS = -Wall -Werror -Wextra
 
 all:
 	@$(C) ./$(BALCAO)/$(BALCAO).c -o ./$(BALCAO)/$(BALCAO) $(CFLAGS) -pthread
-	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS) 
+	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS) -pthread 
 	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS) -pthread
 balcao:
 	@$(C) ./$(BALCAO)/$(BALCAO).c -o ./$(BALCAO)/$(BALCAO) $(CFLAGS) -pthread
