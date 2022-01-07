@@ -89,6 +89,7 @@ void *writeMensagem(void *vargp){
         fflush(stdout);
         fflush(stdin);
         fgets(buffer, MAX, stdin);
+        buffer[strlen(buffer)-1] = '\0';
         size = write(fd_envio, buffer, strlen(buffer));
         if(size == -1){
             if(errno == EAGAIN){

@@ -125,6 +125,7 @@ void *writeMensagem(void *vargp){
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);
+        buffer[strlen(buffer)-1] = '\0';
         fgets(buffer, MAX, stdin);
         size = write(fd_envio, buffer, strlen(buffer));
         if(size == -1){
