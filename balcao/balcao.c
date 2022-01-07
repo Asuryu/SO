@@ -180,13 +180,83 @@ void *aceitarMedicos(){
                     }
 
                 } else if(strcmp(m.especialidade, "neurologia") == 0){
-                    // if(b.nClientesNeurologia > 0){
+                    if(b.nClientesNeurologia > 0){
+                        cliente aux = b.neurologia[0];
+                        int size2 = write(fd_envio, &aux, sizeof(cliente));
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
+                        }
+                        printf("\n[PID %d] Cliente: %s (%s)\n", aux.pid, aux.nome, aux.analise);
+                        fflush(stdout);
+                        // Remove o cliente da lista de espera
+                        b.nClientesNeurologia--;
+                        for(int i = 0; i < b.nClientesNeurologia; i++){
+                            b.neurologia[i] = b.neurologia[i+1];
+                        }
+                        b.medicos[b.nMedicosAtivos].ocupado = 1;
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.neurologia[0].pid);
+                        }
+                    }
+
                 } else if(strcmp(m.especialidade, "estomatologia") == 0){
-                    // if(b.nClientesNeurologia > 0){
+                    if(b.nClientesEstomatologia > 0){
+                        cliente aux = b.estomatologia[0];
+                        int size2 = write(fd_envio, &aux, sizeof(cliente));
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
+                        }
+                        printf("\n[PID %d] Cliente: %s (%s)\n", aux.pid, aux.nome, aux.analise);
+                        fflush(stdout);
+                        // Remove o cliente da lista de espera
+                        b.nClientesEstomatologia--;
+                        for(int i = 0; i < b.nClientesEstomatologia; i++){
+                            b.estomatologia[i] = b.estomatologia[i+1];
+                        }
+                        b.medicos[b.nMedicosAtivos].ocupado = 1;
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.estomatologia[0].pid);
+                        }
+                    }
+
                 } else if(strcmp(m.especialidade, "ortopedia") == 0){
-                    // if(b.nClientesNeurologia > 0){
+                    if(b.nClientesOrtopedia > 0){
+                        cliente aux = b.ortopedia[0];
+                        int size2 = write(fd_envio, &aux, sizeof(cliente));
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
+                        }
+                        printf("\n[PID %d] Cliente: %s (%s)\n", aux.pid, aux.nome, aux.analise);
+                        fflush(stdout);
+                        // Remove o cliente da lista de espera
+                        b.nClientesOrtopedia--;
+                        for(int i = 0; i < b.nClientesOrtopedia; i++){
+                            b.ortopedia[i] = b.ortopedia[i+1];
+                        }
+                        b.medicos[b.nMedicosAtivos].ocupado = 1;
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.ortopedia[0].pid);
+                        }
+                    }
                 } else if(strcmp(m.especialidade, "geral") == 0){
-                    // if(b.nClientesNeurologia > 0){
+                    if(b.nClientesGeral > 0){
+                        cliente aux = b.geral[0];
+                        int size2 = write(fd_envio, &aux, sizeof(cliente));
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar estrutura do utente ao médico com PID %d\n", m.pid);
+                        }
+                        printf("\n[PID %d] Cliente: %s (%s)\n", aux.pid, aux.nome, aux.analise);
+                        fflush(stdout);
+                        // Remove o cliente da lista de espera
+                        b.nClientesGeral--;
+                        for(int i = 0; i < b.nClientesGeral; i++){
+                            b.geral[i] = b.geral[i+1];
+                        }
+                        b.medicos[b.nMedicosAtivos].ocupado = 1;
+                        if(size2 == -1){
+                            printf("\n[BALCÃO] Ocorreu um erro ao enviar mensagem de estado ao cliente com PID %d\n", b.geral[0].pid);
+                        }
+                    }
                 }
 
             } else {
