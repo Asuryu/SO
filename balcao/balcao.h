@@ -17,7 +17,6 @@ typedef struct Balcao {
     int nClientesEspera;
     struct Medico medicos[MAX];
     struct Cliente clientes[MAX];
-    struct Cliente clienteEspera[MAX];
     struct Cliente oftalmologia[4], neurologia[4], estomatologia[4], ortopedia[4], geral[4];
     int nClientesOftalmologia, nClientesNeurologia, nClientesEstomatologia, nClientesOrtopedia, nClientesGeral;
 } balcao, *balcao_ptr;
