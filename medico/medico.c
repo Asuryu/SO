@@ -74,7 +74,6 @@ void *threadVida(){
     sa.sa_flags = SA_RESTART | SA_SIGINFO;
     sigaction(SIGALRM, &sa, NULL);
 
-    // Enviar sinal de vida a cada 5 segundos
     while (1){
         sleep(SINAL_VIDA);
         kill(getpid(), SIGALRM);
