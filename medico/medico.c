@@ -103,7 +103,7 @@ void *readMensagem(void *vargp){
         else{
             fflush(stdout);
             printf("%s: %s\n", c->nome, buffer);
-            if(strcmp(buffer, "adeus\n") == 0){
+            if(strcmp(buffer, "adeus") == 0){
                 fecharMedico();
             }
             fflush(stdout);

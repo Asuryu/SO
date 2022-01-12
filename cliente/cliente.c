@@ -67,7 +67,7 @@ void *readMensagem(void *vargp){
         else{
             fflush(stdout);
             printf("%s: %s\n", m->nome, buffer);
-            if(strcmp(buffer, "adeus\n") == 0){
+            if(strcmp(buffer, "adeus") == 0){
                 fecharCliente();
             }
             fflush(stdout);
