@@ -101,6 +101,7 @@ void *readMensagem(void *vargp){
             }
         }
         else{
+            fflush(stdout);
             printf("%s: %s\n", c->nome, buffer);
             if(strcmp(buffer, "adeus\n") == 0){
                 fecharMedico();
@@ -124,7 +125,7 @@ void *writeMensagem(void *vargp){
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);
-        fgets(buffer, sizeof(buffer), stdin);
+        scanf("%[^\n]", buffer);
         size = write(fd_envio, buffer, strlen(buffer));
         if(size == -1){
             if(errno == EAGAIN){
@@ -226,7 +227,6 @@ int main(int argc, char *argv[]){
             menu();
             fflush(stdout);
             printf("[MÉDICO]\nA atender o/a utente %s\nSintomas: %s\n\n---- INÍCIO DA CONVERSA ----\n", c.nome, c.sintomas);
-            printf("%s", c.pipeCliente);
             fflush(stdout);
             int pipeCliente = open(c.pipeCliente, O_WRONLY);
             if(pipeCliente == -1){

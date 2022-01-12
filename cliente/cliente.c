@@ -65,6 +65,7 @@ void *readMensagem(void *vargp){
             }
         }
         else{
+            fflush(stdout);
             printf("%s: %s\n", m->nome, buffer);
             if(strcmp(buffer, "adeus\n") == 0){
                 fecharCliente();
@@ -88,7 +89,8 @@ void *writeMensagem(void *vargp){
         printf("\nIntroduza uma mensagem: ");
         fflush(stdout);
         fflush(stdin);
-        fgets(buffer, sizeof(buffer), stdin);
+        scanf("%[^\n]", buffer);
+        //fgets(buffer, sizeof(buffer), stdin);
         size = write(fd_envio, buffer, strlen(buffer));
         if(size == -1){
             if(errno == EAGAIN){
@@ -152,7 +154,6 @@ int main(int argc, char *argv[]){
         return 1;
     }
     int size_s = write(fd_envio, &c, sizeof(cliente));
-    printf("%d", size_s);
     if(size_s == -1){
         printf("\n[CLIENTE]\nOcorreu um erro ao autenticar-se\n");
         close(fd_envio);
