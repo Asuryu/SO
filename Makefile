@@ -12,7 +12,7 @@ all:
 balcao:
 	@$(C) ./$(BALCAO)/$(BALCAO).c -o ./$(BALCAO)/$(BALCAO) $(CFLAGS) -pthread
 cliente:
-	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS)
+	@$(C) ./$(CLIENTE)/$(CLIENTE).c -o ./$(CLIENTE)/$(CLIENTE) $(CFLAGS) -pthread
 medico:
 	@$(C) ./$(MEDICO)/$(MEDICO).c -o ./$(MEDICO)/$(MEDICO) $(CFLAGS) -pthread
 clean:
